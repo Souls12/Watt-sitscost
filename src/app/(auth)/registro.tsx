@@ -62,7 +62,7 @@ export default function Registro() {
 
   async function crear() {
     setEnviando(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: correo.trim(),
       password: clave,
       options: {
@@ -71,7 +71,8 @@ export default function Registro() {
       },
     });
     setEnviando(false);
-    if (!error) return setPaso('listo');
+    // Sin confirmación de correo, signUp ya trae la sesión y el guard de _layout entra a la app.
+    if (!error) return data.session ? undefined : setPaso('listo');
     setError(
       error.code === 'weak_password'
         ? 'La contraseña necesita al menos 8 caracteres, con una letra y un número.'
