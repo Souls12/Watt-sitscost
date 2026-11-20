@@ -3,6 +3,7 @@ import { ScrollView, View } from 'react-native';
 import { Almanaque } from '@/components/Almanaque';
 import { router, useFocusEffect } from 'expo-router';
 import { Badge, FAB, IconButton, Snackbar, Text } from 'react-native-paper';
+import { CierrePeriodo } from '@/components/CierrePeriodo';
 import { HojaReporte } from '@/components/HojaReporte';
 import { Pantalla } from '@/components/Pantalla';
 import { formatEnergy, formatMoney } from '@/lib/format';
@@ -50,6 +51,7 @@ export default function Mes() {
         }
       >
         <ScrollView contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: 96 }}>
+          <CierrePeriodo onListo={cargar} />
           {hoy ? (
             <>
               <Text variant="labelLarge">Hoy puedes gastar</Text>
