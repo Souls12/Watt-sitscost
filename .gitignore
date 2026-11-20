@@ -7,3 +7,5 @@ ios/
 .env
 .env.local
 *.tsbuildinfo
+
+.claude/worktrees/
