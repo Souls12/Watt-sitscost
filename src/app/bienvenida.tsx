@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { Button, Text, TextInput } from 'react-native-paper';
+import { CampoFecha } from '@/components/CampoFecha';
 import { Formulario } from '@/components/Formulario';
 import { GuiaFactura } from '@/components/GuiaFactura';
 import { useBienvenida } from '@/lib/ajustes';
+import { hoyIso } from '@/lib/fechas';
 import { useSesion } from '@/lib/sesion';
 import { supabase } from '@/lib/supabase';
 import { formatEnergy, formatMoney } from '@/lib/format';
@@ -23,7 +25,7 @@ export default function Bienvenida() {
   const [error, setError] = useState<string | null>(null);
 
   async function guardarFactura() {
-    const r = validarFactura(kwh, inicio, fin, new Date().toISOString().slice(0, 10));
+    const r = validarFactura(kwh, inicio, fin, hoyIso());
     if (!r.ok) return setError(r.error);
     const { data, error: e } = await supabase.from('facturas').insert(r.valor).select('id').single();
     if (e || !data) return setError(e?.code === '23P01' ? 'Esas fechas se cruzan con otra factura.' : 'No pudimos guardar la factura.');
@@ -57,8 +59,8 @@ export default function Bienvenida() {
           <Text variant="bodyMedium">Con ella podemos proponerte una meta de ahorro.</Text>
           <GuiaFactura />
           <TextInput label="Consumo facturado (kWh)" value={kwh} onChangeText={setKwh} keyboardType="decimal-pad" />
-          <TextInput label="Inicio del consumo (AAAA-MM-DD)" value={inicio} onChangeText={setInicio} />
-          <TextInput label="Fin del consumo (AAAA-MM-DD)" value={fin} onChangeText={setFin} />
+          <CampoFecha label="Inicio del consumo" value={inicio} onChange={setInicio} maxima={hoyIso()} />
+          <CampoFecha label="Fin del consumo" value={fin} onChange={setFin} maxima={hoyIso()} />
           {error && <Text variant="bodySmall">{error}</Text>}
           <Button mode="contained" onPress={guardarFactura}>Guardar factura</Button>
           <Button onPress={() => { setError(null); setPaso('aparatos'); }}>Ahora no</Button>

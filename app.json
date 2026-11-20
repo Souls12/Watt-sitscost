@@ -23,7 +23,8 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "@react-native-vector-icons/material-design-icons"
+      "@react-native-vector-icons/material-design-icons",
+      "@react-native-community/datetimepicker"
     ]
   }
 }

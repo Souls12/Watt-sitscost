@@ -1,18 +1,19 @@
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Dialog, List, Portal, Text, TextInput } from 'react-native-paper';
+import { CampoFecha } from '@/components/CampoFecha';
 import { Formulario } from '@/components/Formulario';
 import { GuiaFactura } from '@/components/GuiaFactura';
 import { useSesion } from '@/lib/sesion';
 import { supabase } from '@/lib/supabase';
 import { formatEnergy, formatMoney } from '@/lib/format';
+import { hoyIso } from '@/lib/fechas';
 import { leerNumero } from '@/lib/numero';
 import { META_AVISO, PORCENTAJES, calcularMeta, validarFactura } from '@/lib/factura';
 
 type Factura = { id: number; kwh_facturado: number; inicio: string; fin: string };
 type Periodo = { inicio: string; fin_estimado: string; porcentaje: number; meta_kwh: number; estado: string };
 
-const hoyLocal = () => new Date().toISOString().slice(0, 10); // solo para validar rápido; la base decide
 
 export default function FacturaTab() {
   const { session } = useSesion();
@@ -43,7 +44,7 @@ export default function FacturaTab() {
   const meta = ultima && pctValido ? calcularMeta(ultima.kwh_facturado, porcentaje, tarifa) : null;
 
   const guardarFactura = async () => {
-    const r = validarFactura(kwh, inicio, fin, hoyLocal());
+    const r = validarFactura(kwh, inicio, fin, hoyIso());
     if (!r.ok) return setError(r.error);
     const { error: e } = editando
       ? await supabase.from('facturas').update(r.valor).eq('id', editando)
@@ -90,8 +91,8 @@ export default function FacturaTab() {
     <Formulario titulo="Factura">
       <GuiaFactura />
       <TextInput label="Consumo facturado (kWh)" value={kwh} onChangeText={setKwh} keyboardType="decimal-pad" />
-      <TextInput label="Inicio del consumo (AAAA-MM-DD)" value={inicio} onChangeText={setInicio} />
-      <TextInput label="Fin del consumo (AAAA-MM-DD)" value={fin} onChangeText={setFin} />
+      <CampoFecha label="Inicio del consumo" value={inicio} onChange={setInicio} maxima={hoyIso()} />
+      <CampoFecha label="Fin del consumo" value={fin} onChange={setFin} maxima={hoyIso()} />
       {error && <Text variant="bodySmall">{error}</Text>}
       <Button mode="contained" onPress={guardarFactura}>{editando ? 'Guardar corrección' : 'Registrar factura'}</Button>
       {editando && <Button onPress={() => { setEditando(null); setKwh(''); setInicio(''); setFin(''); }}>Cancelar</Button>}

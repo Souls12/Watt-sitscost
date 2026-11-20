@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Button, IconButton, List, Modal, Portal, Text, useTheme } from 'react-native-paper';
 import { type Aparato, useColoresTipo } from '@/lib/aparatos';
+import { aIso } from '@/lib/fechas';
 import { formatDuration } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { ordenarPorUso } from '@/lib/uso';
@@ -28,7 +29,7 @@ export function HojaReporte({
   useEffect(() => {
     if (!visible) return;
     setElegido(null);
-    const desde = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+    const desde = aIso(new Date(Date.now() - 30 * 86400000));
     Promise.all([
       supabase.from('aparatos').select('*').is('archivado_en', null).order('creado_en', { ascending: false }),
       supabase.from('registros_uso').select('aparato_id').gte('fecha', desde),

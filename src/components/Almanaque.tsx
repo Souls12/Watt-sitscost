@@ -1,10 +1,21 @@
 import { View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { Luna } from '@/motion';
+import { fechaLarga } from '@/lib/fechas';
 import type { DiaAlmanaque } from '@/lib/usePanelUso';
 
 const LETRAS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const lunes = (iso: string) => (new Date(iso + 'T12:00:00Z').getUTCDay() + 6) % 7;
+
+const hablado = (d: DiaAlmanaque) =>
+  [
+    fechaLarga(d.fecha, false),
+    d.es_hoy && 'hoy',
+    d.reportado ? 'con uso reportado' : 'sin reporte',
+    `${Math.round(d.fraccion * 100)} por ciento del presupuesto gastado`,
+  ]
+    .filter(Boolean)
+    .join(', ');
 
 // Cuadrícula L–D del periodo: cada día es una luna que se llena con lo gastado; hoy en rojo; punto = día reportado.
 export function Almanaque({ dias }: { dias: DiaAlmanaque[] }) {
@@ -37,9 +48,9 @@ export function Almanaque({ dias }: { dias: DiaAlmanaque[] }) {
                 borderColor: d?.es_hoy ? colors.primary : colors.outline,
                 borderRadius: 6,
               }}
-              accessibilityLabel={
-                d ? `${d.fecha}${d.es_hoy ? ', hoy' : ''}${d.reportado ? ', reportado' : ''}` : undefined
-              }
+              accessible={!!d}
+              importantForAccessibility={d ? 'yes' : 'no-hide-descendants'}
+              accessibilityLabel={d ? hablado(d) : undefined}
             >
               {d && (
                 <>
