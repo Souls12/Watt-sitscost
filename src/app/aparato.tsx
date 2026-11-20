@@ -22,6 +22,12 @@ export default function AparatoPantalla() {
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [confirmar, setConfirmar] = useState(false);
+  // Estado de la ficha de origen: 'aprobada' (copia del catálogo), 'propuesta' o 'rechazada' (propuesta propia).
+  const [refEstado, setRefEstado] = useState<string | null>(null);
+  const [proponer, setProponer] = useState(false);
+  const [marca, setMarca] = useState('');
+  const [modelo, setModelo] = useState('');
+  const [errorPropuesta, setErrorPropuesta] = useState('');
 
   useEffect(() => {
     if (referencia)
@@ -34,6 +40,7 @@ export default function AparatoPantalla() {
           const r = data as Referencia | null;
           if (!r) return;
           setRefId(r.id);
+          setRefEstado('aprobada');
           setTipo(r.tipo);
           setNombre(nombreReferencia(r));
           setPotencia(String(r.potencia_w).replace('.', ','));
@@ -41,13 +48,14 @@ export default function AparatoPantalla() {
     if (id)
       supabase
         .from('aparatos')
-        .select('*')
+        .select('*, ref:aparatos_referencia(estado)')
         .eq('id', Number(id))
         .single()
         .then(({ data }) => {
-          const a = data as Aparato | null;
+          const a = data as (Aparato & { ref: { estado: string } | null }) | null;
           if (!a) return;
           setRefId(a.referencia_id);
+          setRefEstado(a.ref?.estado ?? null);
           setTipo(a.tipo);
           setNombre(a.nombre);
           setPotencia(String(a.potencia_w).replace('.', ','));
@@ -80,11 +88,21 @@ export default function AparatoPantalla() {
     router.dismissTo('/aparatos');
   }
 
+  async function enviarPropuesta() {
+    const { error: e } = await supabase.rpc('proponer_aparato', { p_aparato: Number(id), p_marca: marca, p_modelo: modelo });
+    if (e) return setErrorPropuesta(e.message);
+    setProponer(false);
+    setRefEstado('propuesta');
+  }
+
   const propio = !referencia && !id;
   return (
     <Formulario titulo={id ? 'Editar aparato' : referencia ? 'Agregar mi copia' : 'Aparato propio'}>
       {propio && <GuiaEtiqueta />}
-      {refId && (
+      {refEstado === 'propuesta' && (
+        <Text variant="bodySmall">Lo propusiste al catálogo y está en revisión. Mientras tanto lo usas igual.</Text>
+      )}
+      {refEstado === 'aprobada' && (
         <Text variant="bodySmall">
           Copia de la ficha del catálogo. Puedes ajustar la potencia para que coincida con tu aparato.
         </Text>
@@ -132,8 +150,28 @@ export default function AparatoPantalla() {
           Eliminar
         </Button>
       )}
+      {id && (refEstado === null || refEstado === 'rechazada') && (
+        <Button icon="book-plus-outline" onPress={() => { setErrorPropuesta(''); setProponer(true); }}>
+          Proponer al catálogo
+        </Button>
+      )}
       <Button onPress={() => router.back()}>Volver</Button>
       <Portal>
+        <Dialog visible={proponer} onDismiss={() => setProponer(false)}>
+          <Dialog.Title>Proponer al catálogo</Dialog.Title>
+          <Dialog.Content style={{ gap: 8 }}>
+            <Text>Enviamos su tipo y potencia para que otros lo encuentren. Tu aparato no cambia, ni siquiera si no se aprueba.</Text>
+            <TextInput label="Marca" mode="outlined" value={marca} onChangeText={setMarca} />
+            <TextInput label="Modelo" mode="outlined" value={modelo} onChangeText={setModelo} />
+            <HelperText type="error" visible={!!errorPropuesta}>
+              {errorPropuesta}
+            </HelperText>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setProponer(false)}>Cancelar</Button>
+            <Button onPress={enviarPropuesta}>Proponer</Button>
+          </Dialog.Actions>
+        </Dialog>
         <Dialog visible={confirmar} onDismiss={() => setConfirmar(false)}>
           <Dialog.Title>¿Eliminar este aparato?</Dialog.Title>
           <Dialog.Content>

@@ -4,6 +4,7 @@ import { Button, List, SegmentedButtons, Text } from 'react-native-paper';
 import { Formulario } from '@/components/Formulario';
 import { supabase } from '@/lib/supabase';
 import { useSesion } from '@/lib/sesion';
+import { useEsAdministrador } from '@/lib/avisos';
 import { useCifraPrincipal, useTema, type Cifra, type Tema } from '@/lib/ajustes';
 
 type Perfil = {
@@ -20,6 +21,7 @@ export default function Cuenta() {
   const [cifra, setCifra] = useCifraPrincipal();
   const [tema, setTema] = useTema();
   const [perfil, setPerfil] = useState<Perfil | null>(null);
+  const administrador = useEsAdministrador();
 
   useEffect(() => {
     supabase
@@ -60,6 +62,11 @@ export default function Cuenta() {
       <Button mode="outlined" icon="cash" onPress={() => router.push('/tarifa')}>
         Mi tarifa
       </Button>
+      {administrador && (
+        <Button mode="outlined" icon="clipboard-check-outline" onPress={() => router.push('/revision')}>
+          Revisar propuestas
+        </Button>
+      )}
       {/* scope local: cierra solo este teléfono; las sesiones de otros teléfonos siguen abiertas. */}
       <Button mode="outlined" icon="logout" onPress={() => supabase.auth.signOut({ scope: 'local' })}>
         Cerrar sesión

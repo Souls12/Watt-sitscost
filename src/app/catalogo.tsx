@@ -19,6 +19,7 @@ export default function Catalogo() {
     supabase
       .from('aparatos_referencia')
       .select('id, tipo, marca, modelo, potencia_w')
+      .eq('estado', 'aprobada')
       .order('tipo')
       .order('marca')
       .then(({ data }) => setTodos((data ?? []) as Referencia[]));
