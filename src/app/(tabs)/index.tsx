@@ -34,16 +34,18 @@ export default function Mes() {
               <IconButton
                 icon={noLeidos ? 'bell-badge-outline' : 'bell-outline'}
                 iconColor={encabezado.texto}
+                style={{ margin: 0, width: 48, height: 48 }}
                 accessibilityLabel={noLeidos ? `Avisos, ${noLeidos} sin leer` : 'Avisos'}
                 onPress={() => router.push('/avisos')}
               />
-              <Badge visible={noLeidos > 0} size={18} style={{ position: 'absolute', top: 4, right: 4 }}>
+              <Badge visible={noLeidos > 0} size={18} style={{ position: 'absolute', top: 2, right: 2 }}>
                 {noLeidos}
               </Badge>
             </View>
             <IconButton
               icon="account-circle"
               iconColor={encabezado.texto}
+              style={{ margin: 0, width: 48, height: 48 }}
               accessibilityLabel="Mi cuenta"
               onPress={() => router.push('/cuenta')}
             />

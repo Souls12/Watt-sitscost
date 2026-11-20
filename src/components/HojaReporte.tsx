@@ -53,6 +53,9 @@ export function HojaReporte({
           borderTopRightRadius: 16,
           padding: 16,
           maxHeight: '80%',
+          width: '100%',
+          maxWidth: 560,
+          alignSelf: 'center',
         }}
       >
         {!elegido ? (
@@ -77,11 +80,11 @@ export function HojaReporte({
           <>
             <Text variant="titleLarge">{elegido.nombre}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
-              <IconButton icon="minus" accessibilityLabel="Menos tiempo" disabled={horas <= PASO} onPress={() => setHoras((h) => h - PASO)} />
+              <IconButton icon="minus" style={{ margin: 0, width: 48, height: 48 }} accessibilityLabel="Menos tiempo" disabled={horas <= PASO} onPress={() => setHoras((h) => h - PASO)} />
               <Text variant="headlineMedium" style={{ minWidth: 120, textAlign: 'center' }}>
                 {formatDuration(horas * 60)}
               </Text>
-              <IconButton icon="plus" accessibilityLabel="Más tiempo" disabled={horas >= 24} onPress={() => setHoras((h) => h + PASO)} />
+              <IconButton icon="plus" style={{ margin: 0, width: 48, height: 48 }} accessibilityLabel="Más tiempo" disabled={horas >= 24} onPress={() => setHoras((h) => h + PASO)} />
             </View>
             <Button
               mode="contained"

@@ -23,6 +23,8 @@ export function Pantalla({
           backgroundColor: encabezado.fondo,
           paddingTop: insets.top + 16,
           padding: 16,
+          paddingLeft: insets.left + 16,
+          paddingRight: insets.right + 16,
           flexDirection: 'row',
           alignItems: 'center',
         }}
@@ -32,7 +34,8 @@ export function Pantalla({
         </Text>
         {derecha}
       </View>
-      {children}
+      {/* Ancho de lectura: en pantallas anchas el contenido no se estira. */}
+      <View style={{ flex: 1, width: '100%', maxWidth: 720, alignSelf: 'center' }}>{children}</View>
     </View>
   );
 }
