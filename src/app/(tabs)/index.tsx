@@ -1,19 +1,25 @@
-import { useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import { View } from 'react-native';
-import { router } from 'expo-router';
-import { IconButton } from 'react-native-paper';
-import { Canvas, Circle } from '@shopify/react-native-skia';
-import { useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
+import { router, useFocusEffect } from 'expo-router';
+import { FAB, IconButton, Snackbar, Text } from 'react-native-paper';
+import { HojaReporte } from '@/components/HojaReporte';
 import { Pantalla } from '@/components/Pantalla';
+import { formatEnergy, formatMoney } from '@/lib/format';
+import { usePanelUso } from '@/lib/usePanelUso';
+import { Cifra, Racha } from '@/motion';
 import { almanaque } from '@/theme';
 
-// Humo de Reanimated + Skia: una luna que se llena. El ticket del movimiento la reemplaza.
+// Mes: consumo calculado del mes y racha, con el reporte de uso en 3 toques. El ticket del periodo lo completa.
 export default function Mes() {
-  const fill = useSharedValue(0);
-  useEffect(() => {
-    fill.value = withTiming(1, { duration: 400 });
-  }, [fill]);
-  const r = useDerivedValue(() => 28 * fill.value);
+  const { panel, cargar, reportar } = usePanelUso();
+  const [abierta, setAbierta] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useFocusEffect(
+    useCallback(() => {
+      cargar();
+    }, [cargar]),
+  );
+
   return (
     <View style={{ flex: 1 }}>
       <Pantalla
@@ -26,11 +32,32 @@ export default function Mes() {
             onPress={() => router.push('/cuenta')}
           />
         }
+      >
+        <View style={{ padding: 16, gap: 8 }}>
+          <Text variant="labelLarge">Consumo calculado del mes</Text>
+          <Cifra valor={formatEnergy(panel.kwh)} />
+          <Text>{formatMoney(panel.costo)}</Text>
+          <Text variant="labelLarge" style={{ marginTop: 16 }}>
+            Racha
+          </Text>
+          <Racha dias={panel.racha} />
+        </View>
+      </Pantalla>
+      <FAB
+        icon="plus"
+        label="Reportar uso"
+        style={{ position: 'absolute', right: 16, bottom: 16, backgroundColor: almanaque.rojo }}
+        color="#FFFFFF"
+        onPress={() => setAbierta(true)}
       />
-      <Canvas style={{ width: 64, height: 64, margin: 16 }}>
-        <Circle cx={32} cy={32} r={28} color="#CFC8B8" style="stroke" strokeWidth={2} />
-        <Circle cx={32} cy={32} r={r} color={almanaque.amarillo} />
-      </Canvas>
+      <HojaReporte
+        visible={abierta}
+        onCerrar={() => setAbierta(false)}
+        onReportar={async (a, h) => setError(await reportar(a, h))}
+      />
+      <Snackbar visible={!!error} onDismiss={() => setError(null)} duration={5000}>
+        {error}
+      </Snackbar>
     </View>
   );
 }
