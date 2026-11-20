@@ -4,18 +4,22 @@ import { Button, List, Text } from 'react-native-paper';
 import { Formulario } from '@/components/Formulario';
 import { useTarifa } from '@/components/CampoTarifa';
 import { supabase } from '@/lib/supabase';
+import { useSesion } from '@/lib/sesion';
 import { leerTarifa } from '@/lib/tarifa';
 
 type Fila = { id: number; valor_kwh: number; desde: string; tarifa_compartida_version_id: number | null };
-type Compartida = { id: number; tarifa_id: number; valor_kwh: number; estado: string; desde: string | null };
+type Compartida = { id: number; tarifa_id: number; ciudad_id: number; estrato: number; empresa_id: number; valor_kwh: number; estado: string; desde: string | null };
 
 export default function Tarifa() {
+  const { session } = useSesion();
   const { texto, campo, validar } = useTarifa();
   const [historial, setHistorial] = useState<Fila[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
   const [compartidas, setCompartidas] = useState<Compartida[]>([]);
+  const [misVersiones, setMisVersiones] = useState<number[]>([]);
+  const [zona, setZona] = useState<{ ciudad_id: number; estrato: number; empresa_id: number } | null>(null);
 
   const cargar = useCallback(() => {
     supabase
@@ -24,13 +28,16 @@ export default function Tarifa() {
       .order('desde', { ascending: false })
       .order('id', { ascending: false })
       .then(({ data }) => setHistorial(data ?? []));
-    // RLS: aprobadas de mi ciudad, estrato y empresa, y las mías (también pendientes). Columnas explícitas: autor_id no se expone.
+    // RLS deja ver todo al administrador: por eso se filtra aquí a mi zona y a mis versiones. autor_id no se expone: mis versiones salen de mis propuestas.
+    supabase.from('perfiles').select('ciudad_id, estrato, empresa_id').eq('id', session?.user.id ?? '').maybeSingle().then(({ data }) => setZona(data));
+    supabase.from('propuestas').select('tarifa_version_id').eq('tipo', 'tarifa').eq('propuesto_por', session?.user.id ?? '')
+      .then(({ data }) => setMisVersiones((data ?? []).map((x) => Number(x.tarifa_version_id))));
     supabase
       .from('tarifas_compartidas')
-      .select('id, tarifa_id, valor_kwh, estado, desde')
+      .select('id, tarifa_id, ciudad_id, estrato, empresa_id, valor_kwh, estado, desde')
       .order('id', { ascending: false })
       .then(({ data }) => setCompartidas(data ?? []));
-  }, []);
+  }, [session]);
   useFocusEffect(cargar);
 
   const guardar = async () => {
@@ -48,8 +55,9 @@ export default function Tarifa() {
   };
 
   // La última versión aprobada de cada tarifa compartida (la lista viene de la más nueva a la más vieja).
-  const aprobadas = compartidas.filter((c) => c.estado === 'aprobada').filter((c, i, l) => l.findIndex((o) => o.tarifa_id === c.tarifa_id) === i);
-  const pendiente = compartidas.find((c) => c.estado === 'pendiente');
+  const aprobadas = compartidas
+    .filter((c) => c.estado === 'aprobada' && zona && c.ciudad_id === zona.ciudad_id && c.estrato === zona.estrato && c.empresa_id === zona.empresa_id).filter((c, i, l) => l.findIndex((o) => o.tarifa_id === c.tarifa_id) === i);
+  const pendiente = compartidas.find((c) => c.estado === 'pendiente' && misVersiones.includes(c.id));
   const enlazada = historial[0]?.tarifa_compartida_version_id;
 
   return (

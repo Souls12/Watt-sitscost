@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useCifraPrincipal } from '@/lib/ajustes';
 import type { Aparato } from '@/lib/aparatos';
 import { kwhDeReporte } from '@/lib/uso';
 
@@ -23,15 +24,14 @@ export function usePanelUso() {
   const [panel, setPanel] = useState<Panel>({ kwh: 0, costo: 0, racha: 0 });
   const [hoy, setHoy] = useState<PanelHoy | null>(null);
   const [dias, setDias] = useState<DiaAlmanaque[]>([]);
-  const [cifra, setCifra] = useState<'kwh' | 'pesos'>('kwh');
+  const [cifra] = useCifraPrincipal();
 
   const cargar = useCallback(async () => {
-    const [h, r, p, a, perfil] = await Promise.all([
+    const [h, r, p, a] = await Promise.all([
       supabase.rpc('consumo_hogar'),
       supabase.rpc('racha_dias'),
       supabase.from('panel_hoy').select('*').maybeSingle(),
       supabase.rpc('almanaque_periodo'),
-      supabase.from('perfiles').select('cifra_principal').maybeSingle(),
     ]);
     const fila = h.data?.[0];
     setPanel({ kwh: Number(fila?.kwh ?? 0), costo: Number(fila?.costo ?? 0), racha: Number(r.data ?? 0) });
@@ -59,7 +59,6 @@ export function usePanelUso() {
         es_hoy: !!x.es_hoy,
       })),
     );
-    setCifra((perfil.data as Record<string, any> | null)?.cifra_principal === 'pesos' ? 'pesos' : 'kwh');
   }, []);
 
   /** Sube la cifra y la racha al instante; si Postgres rechaza, vuelve atrás y devuelve el mensaje. */

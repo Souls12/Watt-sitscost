@@ -5,6 +5,7 @@ import { Button, Chip, Dialog, HelperText, List, Portal, Text, TextInput } from 
 import { Formulario } from '@/components/Formulario';
 import { type Referencia, criterioTexto, nombreReferencia } from '@/lib/aparatos';
 import { formatPower } from '@/lib/format';
+import { leerNumero } from '@/lib/numero';
 import { supabase } from '@/lib/supabase';
 import { useEsAdministrador } from '@/lib/avisos';
 
@@ -41,7 +42,7 @@ export default function Ficha() {
 
   // Corregir la ficha avisa a quienes la copiaron; cada quien decide si actualiza su aparato.
   async function corregir() {
-    const w = Number(potencia.trim().replace(',', '.'));
+    const w = leerNumero(potencia);
     if (!(w > 0)) return setMensaje('La potencia debe ser mayor que cero.');
     const { data, error } = await supabase.rpc('corregir_referencia', {
       p_id: Number(id),

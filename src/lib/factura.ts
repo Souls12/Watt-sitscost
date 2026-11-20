@@ -1,3 +1,5 @@
+import { leerNumero } from './numero';
+
 export const META_AVISO = 40; // % de reducción por encima del cual se pide confirmación
 export const PORCENTAJES = [5, 10, 15, 20] as const;
 
@@ -5,7 +7,7 @@ const aFecha = (t: string) => (/^\d{4}-\d{2}-\d{2}$/.test(t.trim()) ? t.trim() :
 
 /** Valida lo tecleado (fechas AAAA-MM-DD); la base de datos repite las reglas y además rechaza cruces. */
 export function validarFactura(kwh: string, inicio: string, fin: string, hoy: string) {
-  const k = Number(kwh.trim().replace(',', '.'));
+  const k = leerNumero(kwh);
   const i = aFecha(inicio);
   const f = aFecha(fin);
   if (!(k > 0)) return { ok: false as const, error: 'El consumo facturado debe ser mayor que cero.' };

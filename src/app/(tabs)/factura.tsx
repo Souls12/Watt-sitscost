@@ -6,6 +6,7 @@ import { GuiaFactura } from '@/components/GuiaFactura';
 import { useSesion } from '@/lib/sesion';
 import { supabase } from '@/lib/supabase';
 import { formatEnergy, formatMoney } from '@/lib/format';
+import { leerNumero } from '@/lib/numero';
 import { META_AVISO, PORCENTAJES, calcularMeta, validarFactura } from '@/lib/factura';
 
 type Factura = { id: number; kwh_facturado: number; inicio: string; fin: string };
@@ -37,7 +38,7 @@ export default function FacturaTab() {
   useFocusEffect(cargar);
 
   const ultima = facturas[0];
-  const porcentaje = Number(pct.replace(',', '.'));
+  const porcentaje = leerNumero(pct);
   const pctValido = porcentaje > 0 && porcentaje < 100;
   const meta = ultima && pctValido ? calcularMeta(ultima.kwh_facturado, porcentaje, tarifa) : null;
 

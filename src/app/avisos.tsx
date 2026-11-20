@@ -12,6 +12,7 @@ const fecha = (iso: string) => new Date(iso).toLocaleDateString('es-CO', { day: 
 // Bandeja de avisos. Al abrirla, los no leídos quedan leídos (se resaltan solo esta vez).
 export default function Avisos() {
   const [avisos, setAvisos] = useState<Aviso[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function cargar() {
     const { data } = await supabase.from('avisos').select('*').order('creado_en', { ascending: false });
@@ -24,13 +25,16 @@ export default function Avisos() {
 
   // Ficha corregida: el usuario decide si copia la potencia nueva a su aparato.
   async function decidir(a: Aviso, actualizar: boolean) {
-    if (actualizar) await supabase.rpc(a.tipo === 'tarifa_nueva' ? 'adoptar_tarifa' : 'actualizar_copia', { p_aviso: a.id });
-    else await supabase.from('avisos').update({ atendido_en: new Date().toISOString() }).eq('id', a.id);
+    const { error: e } = actualizar
+      ? await supabase.rpc(a.tipo === 'tarifa_nueva' ? 'adoptar_tarifa' : 'actualizar_copia', { p_aviso: a.id })
+      : await supabase.from('avisos').update({ atendido_en: new Date().toISOString() }).eq('id', a.id);
+    setError(e ? `${e.message} Puedes descartar el aviso con "Dejar como está".` : null);
     cargar();
   }
 
   return (
     <Formulario titulo="Avisos">
+      {error && <Text>{error}</Text>}
       {avisos?.length === 0 && <Text>No tienes avisos por ahora.</Text>}
       {avisos?.map((a) => (
         <Card

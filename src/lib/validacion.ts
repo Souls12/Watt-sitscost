@@ -4,7 +4,7 @@ export const correoValido = (correo: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.tes
 export const contrasenaValida = (clave: string) =>
   clave.length >= 8 && /[A-Za-z]/.test(clave) && /\d/.test(clave);
 
-const numero = (t: string) => Number(t.trim().replace(',', '.'));
+import { leerNumero as numero } from './numero';
 
 export type EntradaAparato = {
   nombre: string;
