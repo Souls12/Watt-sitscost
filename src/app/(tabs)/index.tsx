@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { Almanaque } from '@/components/Almanaque';
 import { router, useFocusEffect } from 'expo-router';
 import { FAB, IconButton, Snackbar, Text } from 'react-native-paper';
 import { HojaReporte } from '@/components/HojaReporte';
@@ -11,7 +12,7 @@ import { almanaque } from '@/theme';
 
 // Mes: consumo calculado del mes y racha, con el reporte de uso en 3 toques. El ticket del periodo lo completa.
 export default function Mes() {
-  const { panel, cargar, reportar } = usePanelUso();
+  const { panel, hoy, dias, cifra, cargar, reportar } = usePanelUso();
   const [abierta, setAbierta] = useState(false);
   const [error, setError] = useState<string | null>(null);
   useFocusEffect(
@@ -33,15 +34,49 @@ export default function Mes() {
           />
         }
       >
-        <View style={{ padding: 16, gap: 8 }}>
-          <Text variant="labelLarge">Consumo calculado del mes</Text>
-          <Cifra valor={formatEnergy(panel.kwh)} />
-          <Text>{formatMoney(panel.costo)}</Text>
-          <Text variant="labelLarge" style={{ marginTop: 16 }}>
-            Racha
-          </Text>
-          <Racha dias={panel.racha} />
-        </View>
+        <ScrollView contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: 96 }}>
+          {hoy ? (
+            <>
+              <Text variant="labelLarge">Hoy puedes gastar</Text>
+              <View style={{ height: 48 }}>
+                <Cifra
+                  valor={
+                    cifra === 'pesos'
+                      ? formatMoney(hoy.presupuesto_hoy * hoy.tarifa_kwh)
+                      : formatEnergy(hoy.presupuesto_hoy)
+                  }
+                />
+              </View>
+              <Text>
+                {cifra === 'pesos'
+                  ? formatEnergy(hoy.presupuesto_hoy)
+                  : formatMoney(hoy.presupuesto_hoy * hoy.tarifa_kwh)}
+              </Text>
+              {hoy.meta_alcanzada && (
+                <Text>
+                  Llegaste a tu meta del periodo
+                  {hoy.excedente > 0 ? ` y la pasaste por ${formatEnergy(hoy.excedente)}` : ''}. Está bien: puedes
+                  seguir reportando.
+                </Text>
+              )}
+              <Text>
+                {hoy.estado === 'extendido'
+                  ? 'Tu periodo se extendió: registra tu factura para cerrarlo.'
+                  : `Faltan ${hoy.dias_restantes} días del periodo.`}
+              </Text>
+              <Racha dias={hoy.racha} />
+            </>
+          ) : (
+            <>
+              <Text variant="labelLarge">Consumo calculado del mes</Text>
+              <Cifra valor={formatEnergy(panel.kwh)} />
+              <Text>{formatMoney(panel.costo)}</Text>
+              <Text>Define tu meta en la pestaña Factura para ver cuánto puedes gastar hoy.</Text>
+              <Racha dias={panel.racha} />
+            </>
+          )}
+          <Almanaque dias={dias} />
+        </ScrollView>
       </Pantalla>
       <FAB
         icon="plus"

@@ -4,15 +4,62 @@ import type { Aparato } from '@/lib/aparatos';
 import { kwhDeReporte } from '@/lib/uso';
 
 export type Panel = { kwh: number; costo: number; racha: number };
+export type PanelHoy = {
+  estado: string;
+  meta_kwh: number;
+  consumido_periodo: number;
+  consumido_hoy: number;
+  presupuesto_hoy: number;
+  excedente: number;
+  meta_alcanzada: boolean;
+  dias_restantes: number;
+  tarifa_kwh: number;
+  racha: number;
+};
+export type DiaAlmanaque = { fecha: string; kwh: number; fraccion: number; reportado: boolean; es_hoy: boolean };
 
-/** Consumo del mes, racha y reporte optimista. Los números reales los calcula Postgres. */
+/** Panel de hoy, almanaque del periodo y reporte optimista. Los números reales los calcula Postgres. */
 export function usePanelUso() {
   const [panel, setPanel] = useState<Panel>({ kwh: 0, costo: 0, racha: 0 });
+  const [hoy, setHoy] = useState<PanelHoy | null>(null);
+  const [dias, setDias] = useState<DiaAlmanaque[]>([]);
+  const [cifra, setCifra] = useState<'kwh' | 'pesos'>('kwh');
 
   const cargar = useCallback(async () => {
-    const [h, r] = await Promise.all([supabase.rpc('consumo_hogar'), supabase.rpc('racha_dias')]);
+    const [h, r, p, a, perfil] = await Promise.all([
+      supabase.rpc('consumo_hogar'),
+      supabase.rpc('racha_dias'),
+      supabase.from('panel_hoy').select('*').maybeSingle(),
+      supabase.rpc('almanaque_periodo'),
+      supabase.from('perfiles').select('cifra_principal').maybeSingle(),
+    ]);
     const fila = h.data?.[0];
     setPanel({ kwh: Number(fila?.kwh ?? 0), costo: Number(fila?.costo ?? 0), racha: Number(r.data ?? 0) });
+    const d = p.data as Record<string, any> | null;
+    setHoy(
+      d && {
+        estado: String(d.estado),
+        meta_kwh: Number(d.meta_kwh),
+        consumido_periodo: Number(d.consumido_periodo),
+        consumido_hoy: Number(d.consumido_hoy),
+        presupuesto_hoy: Number(d.presupuesto_hoy),
+        excedente: Number(d.excedente),
+        meta_alcanzada: !!d.meta_alcanzada,
+        dias_restantes: Number(d.dias_restantes),
+        tarifa_kwh: Number(d.tarifa_kwh),
+        racha: Number(d.racha),
+      },
+    );
+    setDias(
+      ((a.data ?? []) as Record<string, any>[]).map((x) => ({
+        fecha: String(x.fecha),
+        kwh: Number(x.kwh),
+        fraccion: Number(x.fraccion),
+        reportado: !!x.reportado,
+        es_hoy: !!x.es_hoy,
+      })),
+    );
+    setCifra((perfil.data as Record<string, any> | null)?.cifra_principal === 'pesos' ? 'pesos' : 'kwh');
   }, []);
 
   /** Sube la cifra y la racha al instante; si Postgres rechaza, vuelve atrás y devuelve el mensaje. */
@@ -31,5 +78,5 @@ export function usePanelUso() {
     [panel, cargar],
   );
 
-  return { panel, cargar, reportar };
+  return { panel, hoy, dias, cifra, cargar, reportar };
 }
