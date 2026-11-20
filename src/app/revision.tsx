@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { ScrollView } from 'react-native';
+import { FlatList, ScrollView } from 'react-native';
 import { Button, Card, Dialog, HelperText, List, Portal, Text, TextInput } from 'react-native-paper';
-import { Formulario } from '@/components/Formulario';
+import { Pantalla } from '@/components/Pantalla';
 import { formatPower } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { useEsAdministrador } from '@/lib/avisos';
@@ -92,13 +92,18 @@ export default function Revision() {
       : [];
 
   return (
-    <Formulario titulo="Revisar propuestas">
-      {!administrador && <Text>Solo el administrador puede revisar propuestas.</Text>}
-      {administrador && propuestas?.length === 0 && <Text>No hay propuestas por revisar.</Text>}
-      {administrador && propuestas?.map((p) => {
+    <Pantalla titulo="Revisar propuestas">
+      <FlatList
+        data={administrador ? (propuestas ?? []) : []}
+        keyExtractor={(p) => String(p.id)}
+        contentContainerStyle={{ padding: 16, gap: 12 }}
+        ListHeaderComponent={!administrador ? <Text>Solo el administrador puede revisar propuestas.</Text> : undefined}
+        ListEmptyComponent={administrador && propuestas?.length === 0 ? <Text>No hay propuestas por revisar.</Text> : undefined}
+        ListFooterComponent={<Button onPress={() => router.back()}>Volver</Button>}
+        renderItem={({ item: p }) => {
         const d = describir(p);
         return (
-          <Card key={p.id} mode="outlined">
+          <Card mode="outlined">
             <Card.Title
               title={d.titulo}
               titleNumberOfLines={2}
@@ -114,8 +119,8 @@ export default function Revision() {
             </Card.Actions>
           </Card>
         );
-      })}
-      <Button onPress={() => router.back()}>Volver</Button>
+        }}
+      />
       <Portal>
         <Dialog visible={!!abierta} onDismiss={() => setAbierta(null)}>
           <Dialog.Title>{abierta ? `${verbo[abierta.decision]}: ${describir(abierta.p).titulo}` : ''}</Dialog.Title>
@@ -150,6 +155,6 @@ export default function Revision() {
           </Dialog.Actions>
         </Dialog>
       </Portal>
-    </Formulario>
+    </Pantalla>
   );
 }

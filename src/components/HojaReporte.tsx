@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { FlatList, View } from 'react-native';
 import { Button, IconButton, List, Modal, Portal, Text, useTheme } from 'react-native-paper';
 import { type Aparato, useColoresTipo } from '@/lib/aparatos';
 import { aIso } from '@/lib/fechas';
@@ -56,12 +56,14 @@ export function HojaReporte({
         }}
       >
         {!elegido ? (
-          <>
-            <Text variant="titleLarge">¿Qué usaste?</Text>
-            {lista.length === 0 && <Text style={{ paddingVertical: 16 }}>Primero agrega un aparato en la pestaña Aparatos.</Text>}
-            {lista.map((a) => (
+          <FlatList
+            data={lista}
+            keyExtractor={(a) => String(a.id)}
+            style={{ flexGrow: 0 }}
+            ListHeaderComponent={<Text variant="titleLarge">¿Qué usaste?</Text>}
+            ListEmptyComponent={<Text style={{ paddingVertical: 16 }}>Primero agrega un aparato en la pestaña Aparatos.</Text>}
+            renderItem={({ item: a }) => (
               <List.Item
-                key={a.id}
                 title={a.cantidad > 1 ? `${a.nombre} ×${a.cantidad}` : a.nombre}
                 description={a.tipo}
                 left={() => (
@@ -69,8 +71,8 @@ export function HojaReporte({
                 )}
                 onPress={() => elegir(a)}
               />
-            ))}
-          </>
+            )}
+          />
         ) : (
           <>
             <Text variant="titleLarge">{elegido.nombre}</Text>
