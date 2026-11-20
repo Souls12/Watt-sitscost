@@ -45,6 +45,7 @@ function Rutas() {
       <Stack.Protected guard={!!session && !recuperando}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="cuenta" />
+        <Stack.Screen name="tarifa" />
       </Stack.Protected>
       <Stack.Protected guard={!!session && recuperando}>
         <Stack.Screen name="nueva-contrasena" />

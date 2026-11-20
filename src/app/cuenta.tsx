@@ -39,6 +39,9 @@ export default function Cuenta() {
         description="Empresa proveedora"
         left={(p) => <List.Icon {...p} icon="flash" />}
       />
+      <Button mode="outlined" icon="cash" onPress={() => router.push('/tarifa')}>
+        Mi tarifa
+      </Button>
       {/* scope local: cierra solo este teléfono; las sesiones de otros teléfonos siguen abiertas. */}
       <Button mode="outlined" icon="logout" onPress={() => supabase.auth.signOut({ scope: 'local' })}>
         Cerrar sesión
