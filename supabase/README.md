@@ -15,6 +15,10 @@ Authentication → URL Configuration → **Redirect URLs**, agregar:
 
 Sin esto, el enlace de "Olvidé mi contraseña" (y el de confirmación, si se activa) no vuelve a la app (Supabase redirige al Site URL). La confirmación del correo igual queda hecha al abrir el enlace; luego se entra con la contraseña.
 
+Authentication → Attack Protection → **CAPTCHA** (Turnstile o hCaptcha): recomendado antes de publicar. Limita los registros automatizados (la base ya reutiliza ciudades/empresas propuestas repetidas, pero el registro masivo de cuentas solo lo frena el CAPTCHA). Requiere enviar el token desde la app en `signUp`.
+
+Pruebas de la base: `supabase/tests/escenarios.sql` (corre en una transacción con ROLLBACK; no deja datos).
+
 No activar "Single session per user": la app permite sesión en varios teléfonos y cierra sesión solo en el teléfono actual.
 
 ## Dar el rol de administrador

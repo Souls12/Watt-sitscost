@@ -28,13 +28,16 @@ export default function FacturaTab() {
   const [error, setError] = useState<string | null>(null);
   const [confirmar, setConfirmar] = useState(false);
   const [preguntaTarifa, setPreguntaTarifa] = useState(false);
+  const [porEliminar, setPorEliminar] = useState<number | null>(null);
 
   const cargar = useCallback(() => {
+    const falla = () => setError('No pudimos actualizar tus datos. Revisa tu conexión.');
     supabase.from('facturas').select('id, kwh_facturado, inicio, fin').order('fin', { ascending: false })
-      .then(({ data }) => setFacturas((data ?? []) as Factura[]));
+      .then(({ data, error: e }) => (e ? falla() : setFacturas((data ?? []) as Factura[])));
     supabase.from('periodo_actual').select('inicio, fin_estimado, porcentaje, meta_kwh, estado').maybeSingle()
-      .then(({ data }) => setPeriodo(data as Periodo | null));
-    if (session) supabase.rpc('tarifa_vigente', { p_usuario: session.user.id }).then(({ data }) => setTarifa(Number(data ?? 0)));
+      .then(({ data, error: e }) => (e ? falla() : setPeriodo(data as Periodo | null)));
+    if (session) supabase.rpc('tarifa_vigente', { p_usuario: session.user.id })
+      .then(({ data, error: e }) => (e ? falla() : setTarifa(Number(data ?? 0))));
   }, [session]);
   useFocusEffect(cargar);
 
@@ -63,8 +66,9 @@ export default function FacturaTab() {
     setEditando(f.id); setKwh(String(f.kwh_facturado)); setInicio(f.inicio); setFin(f.fin);
   };
   const eliminar = async (id: number) => {
+    setPorEliminar(null);
     const { error: e } = await supabase.from('facturas').delete().eq('id', id);
-    setError(e ? 'No pudimos eliminar la factura.' : null);
+    setError(e ? (e.code === '23514' ? e.message : 'No pudimos eliminar la factura.') : null);
     cargar();
   };
 
@@ -106,7 +110,7 @@ export default function FacturaTab() {
           right={() => (
             <>
               <Button onPress={() => corregir(f)}>Corregir</Button>
-              <Button onPress={() => eliminar(f.id)}>Eliminar</Button>
+              <Button onPress={() => setPorEliminar(f.id)}>Eliminar</Button>
             </>
           )}
         />
@@ -142,6 +146,16 @@ export default function FacturaTab() {
           <Dialog.Actions>
             <Button onPress={() => setPreguntaTarifa(false)}>Sigue igual</Button>
             <Button onPress={() => { setPreguntaTarifa(false); router.push('/tarifa'); }}>Cambió</Button>
+          </Dialog.Actions>
+        </Dialog>
+        <Dialog visible={porEliminar !== null} onDismiss={() => setPorEliminar(null)}>
+          <Dialog.Title>¿Eliminar esta factura?</Dialog.Title>
+          <Dialog.Content>
+            <Text>Si cerró un periodo, ese periodo se reabre. Esta acción no se puede deshacer.</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setPorEliminar(null)}>Cancelar</Button>
+            <Button onPress={() => eliminar(porEliminar!)}>Eliminar</Button>
           </Dialog.Actions>
         </Dialog>
         <Dialog visible={confirmar} onDismiss={() => setConfirmar(false)}>

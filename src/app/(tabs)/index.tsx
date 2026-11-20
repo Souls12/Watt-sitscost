@@ -20,7 +20,7 @@ export default function Mes() {
   const [error, setError] = useState<string | null>(null);
   useFocusEffect(
     useCallback(() => {
-      cargar();
+      cargar().then(setError);
     }, [cargar]),
   );
 

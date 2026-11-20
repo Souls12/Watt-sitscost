@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
+import { Snackbar, Text, useTheme } from 'react-native-paper';
 import { useFocusEffect } from 'expo-router';
 import { CartesianChart, Line } from 'victory-native';
 import { Pantalla } from '@/components/Pantalla';
@@ -16,10 +16,12 @@ export default function Semanas() {
   const colores = useColoresTipo();
   const [semanas, setSemanas] = useState<Semana[]>([]);
   const [puntos, setPuntos] = useState<PuntoAparato[]>([]);
+  const [error, setError] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       Promise.all([supabase.rpc('semanas_periodo'), supabase.rpc('tendencia_aparatos')]).then(([s, t]) => {
+        if (s.error || t.error) return setError(true);
         setSemanas(((s.data ?? []) as any[]).map((x) => ({ ...x, kwh: num(x.kwh), presupuesto: num(x.presupuesto) })));
         setPuntos(((t.data ?? []) as any[]).map((x) => ({ ...x, kwh: num(x.kwh) })));
       });
@@ -93,6 +95,9 @@ export default function Semanas() {
           </>
         )}
       </ScrollView>
+      <Snackbar visible={error} onDismiss={() => setError(false)} duration={5000}>
+        No pudimos actualizar tus datos. Revisa tu conexión.
+      </Snackbar>
     </Pantalla>
   );
 }

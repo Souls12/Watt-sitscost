@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Button, List, Text } from 'react-native-paper';
 import { Formulario } from '@/components/Formulario';
 import { useTarifa } from '@/components/CampoTarifa';
+import { formatTarifa } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { useSesion } from '@/lib/sesion';
 import { leerTarifa } from '@/lib/tarifa';
@@ -64,7 +65,7 @@ export default function Tarifa() {
     <Formulario titulo="Mi tarifa">
       <Text variant="bodyLarge">
         {historial[0]
-          ? `Vigente: $${historial[0].valor_kwh} por kWh desde el ${historial[0].desde}.`
+          ? `Vigente: ${formatTarifa(historial[0].valor_kwh)} por kWh desde el ${historial[0].desde}.`
           : 'Aún no tienes tarifa.'}
       </Text>
       {campo}
@@ -75,7 +76,7 @@ export default function Tarifa() {
       {enlazada && <Text variant="bodySmall">Tu tarifa está enlazada a una tarifa compartida. Si cambia, te avisamos y tú decides.</Text>}
       <List.Subheader>Compartir</List.Subheader>
       {pendiente ? (
-        <Text variant="bodyMedium">{`Tu versión de $${pendiente.valor_kwh} por kWh espera la aprobación del administrador.`}</Text>
+        <Text variant="bodyMedium">{`Tu versión de ${formatTarifa(pendiente.valor_kwh)} por kWh espera la aprobación del administrador.`}</Text>
       ) : (
         <Button disabled={!historial[0]} onPress={() => rpc('compartir_tarifa', { p_valor: historial[0].valor_kwh })}>
           Compartir mi tarifa vigente
@@ -86,7 +87,7 @@ export default function Tarifa() {
       {aprobadas.map((c) => (
         <List.Item
           key={c.id}
-          title={`$${c.valor_kwh} por kWh`}
+          title={`${formatTarifa(c.valor_kwh)} por kWh`}
           description={`Aprobada el ${c.desde}`}
           right={() => (
             <Button disabled={enlazada === c.id} onPress={() => rpc('elegir_tarifa', { p_version: c.id })}>
@@ -97,7 +98,7 @@ export default function Tarifa() {
       ))}
       <List.Subheader>Historial</List.Subheader>
       {historial.map((f) => (
-        <List.Item key={f.id} title={`$${f.valor_kwh} por kWh`} description={`Desde el ${f.desde}`} />
+        <List.Item key={f.id} title={`${formatTarifa(f.valor_kwh)} por kWh`} description={`Desde el ${f.desde}`} />
       ))}
       <Button onPress={() => router.back()}>Volver</Button>
     </Formulario>

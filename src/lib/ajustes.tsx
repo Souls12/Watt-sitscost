@@ -68,8 +68,9 @@ export function AjustesProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(CLAVE_TEMA, t).catch(() => {});
   };
   const setCifra = (c: Cifra) => {
+    const antes = cifra;
     setCifraEstado(c);
-    supabase.from('perfiles').update({ cifra_principal: c }).eq('id', id!).then(() => {});
+    supabase.from('perfiles').update({ cifra_principal: c }).eq('id', id!).then(({ error }) => error && setCifraEstado(antes));
   };
   // Se marca antes de crear la cuenta: al llegar la sesión, el guard de rutas ya lleva a la bienvenida.
   const iniciarBienvenida = () => {

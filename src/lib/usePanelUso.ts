@@ -26,13 +26,15 @@ export function usePanelUso() {
   const [dias, setDias] = useState<DiaAlmanaque[]>([]);
   const [cifra] = useCifraPrincipal();
 
-  const cargar = useCallback(async () => {
+  /** Si algo falla conserva lo que ya se muestra y devuelve el mensaje. */
+  const cargar = useCallback(async (): Promise<string | null> => {
     const [h, r, p, a] = await Promise.all([
       supabase.rpc('consumo_hogar'),
       supabase.rpc('racha_dias'),
       supabase.from('panel_hoy').select('*').maybeSingle(),
       supabase.rpc('almanaque_periodo'),
     ]);
+    if (h.error || r.error || p.error || a.error) return 'No pudimos actualizar tus datos. Revisa tu conexión.';
     const fila = h.data?.[0];
     setPanel({ kwh: Number(fila?.kwh ?? 0), costo: Number(fila?.costo ?? 0), racha: Number(r.data ?? 0) });
     const d = p.data as Record<string, any> | null;
@@ -59,6 +61,7 @@ export function usePanelUso() {
         es_hoy: !!x.es_hoy,
       })),
     );
+    return null;
   }, []);
 
   /** Sube la cifra y la racha al instante; si Postgres rechaza, vuelve atrás y devuelve el mensaje. */
@@ -71,8 +74,7 @@ export function usePanelUso() {
         setPanel(antes);
         return error.message;
       }
-      await cargar();
-      return null;
+      return await cargar();
     },
     [panel, cargar],
   );

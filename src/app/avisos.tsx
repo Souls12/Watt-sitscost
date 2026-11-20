@@ -4,9 +4,11 @@ import { View } from 'react-native';
 import { Button, Card, Text, useTheme } from 'react-native-paper';
 import { Formulario } from '@/components/Formulario';
 import { type Aviso } from '@/lib/avisos';
+import { aIso, fechaLarga } from '@/lib/fechas';
 import { supabase } from '@/lib/supabase';
 
-const fecha = (iso: string) => new Date(iso).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
+// Sin Intl: Hermes en Android 9 no garantiza datos de locale.
+const fecha = (iso: string) => fechaLarga(aIso(new Date(iso)), false);
 
 // Bandeja de avisos. Al abrirla, los no leídos quedan leídos (se resaltan solo esta vez).
 export default function Avisos() {

@@ -14,6 +14,12 @@ export function formatMoney(pesos: number): string {
   return `≈ $${miles(Math.round(pesos / 10) * 10)}`;
 }
 
+/** Tarifa por kWh exacta: "$1.050" o "$650,5". */
+export function formatTarifa(valor: number): string {
+  const [entero, dec] = valor.toFixed(2).replace(/\.?0+$/, '').split('.');
+  return `$${miles(Number(entero))}${dec ? ',' + dec : ''}`;
+}
+
 /** Potencia en W: "1.500 W". */
 export function formatPower(watts: number): string {
   return `${miles(watts)} W`;

@@ -1,4 +1,10 @@
-import { formatEnergy, formatMoney, formatPower, formatDuration } from './format';
+import { formatEnergy, formatMoney, formatPower, formatDuration, formatTarifa } from './format';
+
+describe('formatTarifa', () => {
+  it('miles con punto, sin decimales enteros', () => expect(formatTarifa(1050)).toBe('$1.050'));
+  it('coma decimal', () => expect(formatTarifa(650.5)).toBe('$650,5'));
+  it('dos decimales', () => expect(formatTarifa(650.25)).toBe('$650,25'));
+});
 
 describe('formatEnergy (entrada en kWh)', () => {
   it('muestra kWh con coma decimal', () => expect(formatEnergy(5.8)).toBe('5,8 kWh'));
