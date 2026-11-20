@@ -29,7 +29,8 @@ export function CampoFecha({
       label={label}
       value={value ? fechaLarga(value) : ''}
       placeholder="Toca para elegir"
-      editable={false}
+      readOnly // no `editable={false}`: Paper lo pinta como deshabilitado (bajo contraste)
+      showSoftInputOnFocus={false}
       right={<TextInput.Icon icon="calendar" onPress={abrir} accessibilityLabel={`Elegir ${label.toLowerCase()}`} />}
       onPressIn={abrir}
       accessibilityRole="button"
