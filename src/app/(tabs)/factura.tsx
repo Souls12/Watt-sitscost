@@ -70,10 +70,16 @@ export default function FacturaTab() {
     setError(e ? (e.code === '23505' ? 'Ya tienes un periodo abierto.' : 'No pudimos crear el periodo.') : null);
     cargar();
   };
+  const cambiarMeta = async () => {
+    setConfirmar(false);
+    const { error: e } = await supabase.rpc('cambiar_meta', { p_porcentaje: porcentaje });
+    setError(e ? 'No pudimos cambiar la meta.' : null);
+    cargar();
+  };
   const definirMeta = () => {
     if (!pctValido) return setError('Escribe un porcentaje entre 1 y 99.');
     if (porcentaje > META_AVISO) return setConfirmar(true);
-    crearPeriodo();
+    periodo ? cambiarMeta() : crearPeriodo();
   };
 
   return (
@@ -102,11 +108,12 @@ export default function FacturaTab() {
       ))}
 
       <List.Subheader>Mi meta</List.Subheader>
-      {periodo ? (
+      {periodo && (
         <Text variant="bodyLarge">
           {`Periodo del ${periodo.inicio} al ${periodo.fin_estimado}${periodo.estado === 'extendido' ? ' (extendido)' : ''}: meta de ${formatEnergy(periodo.meta_kwh)}, ${periodo.porcentaje} % menos.`}
         </Text>
-      ) : ultima ? (
+      )}
+      {ultima ? (
         <>
           {PORCENTAJES.map((p) => (
             <Button key={p} mode={porcentaje === p ? 'contained-tonal' : 'outlined'} onPress={() => setPct(String(p))}>{`${p} %`}</Button>
@@ -115,7 +122,7 @@ export default function FacturaTab() {
           {meta && (
             <Text variant="titleMedium">{`Meta: ${formatEnergy(meta.kwh)} · ${formatMoney(meta.pesos)}`}</Text>
           )}
-          <Button mode="contained" onPress={definirMeta}>Empezar mi periodo</Button>
+          <Button mode="contained" onPress={definirMeta}>{periodo ? 'Cambiar mi meta' : 'Empezar mi periodo'}</Button>
         </>
       ) : (
         <Text variant="bodyMedium">Registra tu factura para definir una meta.</Text>
@@ -129,7 +136,7 @@ export default function FacturaTab() {
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setConfirmar(false)}>Cambiar</Button>
-            <Button onPress={crearPeriodo}>Sí, usar {porcentaje} %</Button>
+            <Button onPress={periodo ? cambiarMeta : crearPeriodo}>Sí, usar {porcentaje} %</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
