@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router/js-tabs';
+import { useTransicionPestanas } from '@/motion';
 import { BottomNavigation, Icon, useTheme } from 'react-native-paper';
 
 const destinos = [
@@ -10,9 +11,10 @@ const destinos = [
 
 export default function TabsLayout() {
   const theme = useTheme();
+  const transicion = useTransicionPestanas();
   return (
     <Tabs
-      screenOptions={{ headerShown: false }}
+      screenOptions={{ headerShown: false, ...transicion }}
       tabBar={({ emitter, navigateToTab, state, descriptors, insets }) => (
         <BottomNavigation.Bar
           navigationState={state}
