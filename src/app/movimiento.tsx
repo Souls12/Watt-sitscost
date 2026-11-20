@@ -18,9 +18,7 @@ export default function MuestraMovimiento() {
       <Button mode="contained" onPress={() => setLlenado(llenado >= 1 ? 0 : llenado + 0.5)}>Llenar</Button>
 
       <Text variant="titleLarge">Cifra</Text>
-      <View style={{ height: 56 }}>
-        <Cifra valor={`${(n * 1.37).toFixed(2)} kWh`} />
-      </View>
+      <Cifra valor={`${(n * 1.37).toFixed(2)} kWh`} />
       <Button mode="contained" onPress={() => setN(n + 1)}>Cambiar</Button>
 
       <Text variant="titleLarge">Racha</Text>

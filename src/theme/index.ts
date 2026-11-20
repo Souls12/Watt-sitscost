@@ -11,7 +11,8 @@ const fontConfig = {
   fontFamily: fonts.body,
   displayLarge: { fontFamily: fonts.slab },
   displayMedium: { fontFamily: fonts.slab },
-  displaySmall: { fontFamily: fonts.slab },
+  // La cifra principal (Cifra, Racha): escala con la fuente del sistema, sin altura fija.
+  displaySmall: { fontFamily: fonts.slab, fontSize: 40, lineHeight: 48 },
   headlineLarge: { fontFamily: fonts.slab },
   headlineMedium: { fontFamily: fonts.slab },
   headlineSmall: { fontFamily: fonts.slab },

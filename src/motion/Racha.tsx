@@ -28,7 +28,7 @@ export function Racha({ dias }: { dias: number }) {
   }, [dias, reducir, y, o]);
   const punto = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }], opacity: o.value }));
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 56 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
       <Animated.View
         style={[{ width: 14, height: 14, borderRadius: 7, backgroundColor: colors.primary }, punto]}
       />

@@ -55,15 +55,13 @@ export default function Mes() {
           {hoy ? (
             <>
               <Text variant="labelLarge">Hoy puedes gastar</Text>
-              <View style={{ height: 48 }}>
-                <Cifra
-                  valor={
-                    cifra === 'pesos'
-                      ? formatMoney(hoy.presupuesto_hoy * hoy.tarifa_kwh)
-                      : formatEnergy(hoy.presupuesto_hoy)
-                  }
-                />
-              </View>
+              <Cifra
+                valor={
+                  cifra === 'pesos'
+                    ? formatMoney(hoy.presupuesto_hoy * hoy.tarifa_kwh)
+                    : formatEnergy(hoy.presupuesto_hoy)
+                }
+              />
               <Text>
                 {cifra === 'pesos'
                   ? formatEnergy(hoy.presupuesto_hoy)
