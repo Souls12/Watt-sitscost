@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { Button, List } from 'react-native-paper';
+import { Button, List, SegmentedButtons, Text } from 'react-native-paper';
 import { Formulario } from '@/components/Formulario';
 import { supabase } from '@/lib/supabase';
 import { useSesion } from '@/lib/sesion';
+import { useCifraPrincipal, useTema, type Cifra, type Tema } from '@/lib/ajustes';
 
 type Perfil = {
   nombre: string;
@@ -16,6 +17,8 @@ const enRevision = (x: { estado: string } | null) => (x?.estado === 'propuesta' 
 
 export default function Cuenta() {
   const { session } = useSesion();
+  const [cifra, setCifra] = useCifraPrincipal();
+  const [tema, setTema] = useTema();
   const [perfil, setPerfil] = useState<Perfil | null>(null);
 
   useEffect(() => {
@@ -39,6 +42,21 @@ export default function Cuenta() {
         description="Empresa proveedora"
         left={(p) => <List.Icon {...p} icon="flash" />}
       />
+      <Text variant="labelLarge">Cifra principal</Text>
+      <SegmentedButtons
+        value={cifra}
+        onValueChange={(v) => setCifra(v as Cifra)}
+        buttons={[{ value: 'kwh', label: 'kWh' }, { value: 'pesos', label: 'Pesos' }]}
+      />
+      <Text variant="labelLarge">Tema</Text>
+      <SegmentedButtons
+        value={tema}
+        onValueChange={(v) => setTema(v as Tema)}
+        buttons={[{ value: 'sistema', label: 'Sistema' }, { value: 'claro', label: 'Claro' }, { value: 'oscuro', label: 'Oscuro' }]}
+      />
+      <Button mode="outlined" icon="help-circle-outline" onPress={() => router.push('/tutorial')}>
+        Ayuda y tutorial
+      </Button>
       <Button mode="outlined" icon="cash" onPress={() => router.push('/tarifa')}>
         Mi tarifa
       </Button>
