@@ -1,0 +1,4 @@
+﻿tipo,potencia_tipica_w,rango_min_w,rango_max_w,uso_tipico_horas_dia,uso_constante,fuente_url,notas
+Ducha eléctrica,4220,3280,4220,,no,"docs/catalogo/fuentes/upme-consumo-final-residencial-urbano-comercial.pdf (UPME-UNAL 2006, mediciones de campo en hogares colombianos)","Tabla 7-5: promedio 3,75 kW, desv. 0,47 kW (31 duchas). Pesimista: promedio + 1 desv."
+Ventilador,89,31,89,,no,"docs/catalogo/fuentes/upme-consumo-final-residencial-urbano-comercial.pdf (UPME-UNAL 2006, mediciones de campo en hogares colombianos)","Tabla 7-7: 89 W promedio a velocidad media (16 ventiladores, Barranquilla); Tabla 8-2: 30,8-72,2 W. Pesimista: 89 W."
+Licuadora,816,375,816,,no,"docs/catalogo/fuentes/upme-consumo-final-residencial-urbano-comercial.pdf (UPME-UNAL 2006, mediciones de campo en hogares colombianos)","Tabla 7-8 y sección 7.1.8: rango medido 375-816 W, promedio 670 W. Pesimista: 816 W."
