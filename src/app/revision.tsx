@@ -9,12 +9,13 @@ import { useEsAdministrador } from '@/lib/avisos';
 
 type Propuesta = {
   id: number;
-  tipo: 'aparato' | 'ciudad' | 'empresa';
+  tipo: 'aparato' | 'ciudad' | 'empresa' | 'tarifa';
   estado: 'pendiente' | 'pospuesta';
   creado_en: string;
   referencia: { tipo: string; marca: string | null; modelo: string | null; potencia_w: number } | null;
   ciudad: { nombre: string; departamento: string | null } | null;
   empresa: { nombre: string } | null;
+  tarifa: { valor_kwh: number; estrato: number; ciudad: { nombre: string } | null; empresa: { nombre: string } | null } | null;
 };
 type Decision = 'aprobada' | 'rechazada' | 'pospuesta' | 'unida';
 type Lugar = { id: number; nombre: string; departamento?: string | null };
@@ -26,6 +27,11 @@ function describir(p: Propuesta) {
   if (p.referencia)
     return { titulo: `Aparato: ${p.referencia.marca} ${p.referencia.modelo}`, detalle: `${p.referencia.tipo} · ${formatPower(p.referencia.potencia_w)}` };
   if (p.ciudad) return { titulo: `Ciudad: ${p.ciudad.nombre}`, detalle: p.ciudad.departamento ?? 'Sin departamento' };
+  if (p.tarifa)
+    return {
+      titulo: `Tarifa: $${p.tarifa.valor_kwh} por kWh`,
+      detalle: `${p.tarifa.ciudad?.nombre ?? ''} · estrato ${p.tarifa.estrato} · ${p.tarifa.empresa?.nombre ?? ''}`,
+    };
   return { titulo: `Empresa: ${p.empresa?.nombre ?? ''}`, detalle: 'Empresa proveedora' };
 }
 
@@ -43,7 +49,7 @@ export default function Revision() {
   async function cargar() {
     const { data } = await supabase
       .from('propuestas')
-      .select('id, tipo, estado, creado_en, referencia:aparatos_referencia(tipo, marca, modelo, potencia_w), ciudad:ciudades(nombre, departamento), empresa:empresas(nombre)')
+      .select('id, tipo, estado, creado_en, referencia:aparatos_referencia(tipo, marca, modelo, potencia_w), ciudad:ciudades(nombre, departamento), empresa:empresas(nombre), tarifa:tarifas_compartidas(valor_kwh, estrato, ciudad:ciudades(nombre), empresa:empresas(nombre))')
       .in('estado', ['pendiente', 'pospuesta'])
       .order('estado') // 'pendiente' antes que 'pospuesta'
       .order('creado_en');
@@ -81,7 +87,7 @@ export default function Revision() {
   }
 
   const opciones =
-    abierta && abierta.p.tipo !== 'aparato'
+    abierta && (abierta.p.tipo === 'ciudad' || abierta.p.tipo === 'empresa')
       ? lugares[abierta.p.tipo].filter((l) => sinTildes(l.nombre).includes(sinTildes(filtro))).slice(0, 5)
       : [];
 
@@ -100,7 +106,7 @@ export default function Revision() {
             />
             <Card.Actions style={{ flexWrap: 'wrap' }}>
               {p.estado === 'pendiente' && <Button onPress={() => abrir(p, 'pospuesta')}>Posponer</Button>}
-              {p.tipo !== 'aparato' && <Button onPress={() => abrir(p, 'unida')}>Unir</Button>}
+              {(p.tipo === 'ciudad' || p.tipo === 'empresa') && <Button onPress={() => abrir(p, 'unida')}>Unir</Button>}
               <Button onPress={() => abrir(p, 'rechazada')}>Rechazar</Button>
               <Button mode="contained" onPress={() => abrir(p, 'aprobada')}>
                 Aprobar

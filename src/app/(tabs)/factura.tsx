@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Button, Dialog, List, Portal, Text, TextInput } from 'react-native-paper';
 import { Formulario } from '@/components/Formulario';
 import { GuiaFactura } from '@/components/GuiaFactura';
@@ -25,6 +25,7 @@ export default function FacturaTab() {
   const [pct, setPct] = useState('10');
   const [error, setError] = useState<string | null>(null);
   const [confirmar, setConfirmar] = useState(false);
+  const [preguntaTarifa, setPreguntaTarifa] = useState(false);
 
   const cargar = useCallback(() => {
     supabase.from('facturas').select('id, kwh_facturado, inicio, fin').order('fin', { ascending: false })
@@ -50,7 +51,9 @@ export default function FacturaTab() {
       setError(e.code === '23P01' ? 'Esas fechas se cruzan con otra factura.' : e.message);
       return;
     }
-    setError(null); setEditando(null); setKwh(''); setInicio(''); setFin('');
+    setError(null); setKwh(''); setInicio(''); setFin('');
+    if (!editando) setPreguntaTarifa(true);
+    setEditando(null);
     cargar();
   };
 
@@ -129,6 +132,16 @@ export default function FacturaTab() {
       )}
 
       <Portal>
+        <Dialog visible={preguntaTarifa} onDismiss={() => setPreguntaTarifa(false)}>
+          <Dialog.Title>¿El valor por kWh sigue igual?</Dialog.Title>
+          <Dialog.Content>
+            <Text>{`Tu tarifa vigente es ${formatMoney(tarifa)} por kWh. Compárala con tu factura nueva.`}</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setPreguntaTarifa(false)}>Sigue igual</Button>
+            <Button onPress={() => { setPreguntaTarifa(false); router.push('/tarifa'); }}>Cambió</Button>
+          </Dialog.Actions>
+        </Dialog>
         <Dialog visible={confirmar} onDismiss={() => setConfirmar(false)}>
           <Dialog.Title>Una meta ambiciosa</Dialog.Title>
           <Dialog.Content>

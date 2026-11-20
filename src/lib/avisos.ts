@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 
 export type Aviso = {
   id: number;
-  tipo: 'propuesta_resuelta' | 'ficha_corregida';
+  tipo: 'propuesta_resuelta' | 'ficha_corregida' | 'tarifa_nueva';
   titulo: string;
   cuerpo: string;
   leido_en: string | null;

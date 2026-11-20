@@ -24,7 +24,7 @@ export default function Avisos() {
 
   // Ficha corregida: el usuario decide si copia la potencia nueva a su aparato.
   async function decidir(a: Aviso, actualizar: boolean) {
-    if (actualizar) await supabase.rpc('actualizar_copia', { p_aviso: a.id });
+    if (actualizar) await supabase.rpc(a.tipo === 'tarifa_nueva' ? 'adoptar_tarifa' : 'actualizar_copia', { p_aviso: a.id });
     else await supabase.from('avisos').update({ atendido_en: new Date().toISOString() }).eq('id', a.id);
     cargar();
   }
@@ -42,11 +42,11 @@ export default function Avisos() {
           <Card.Content>
             <Text>{a.cuerpo}</Text>
           </Card.Content>
-          {a.tipo === 'ficha_corregida' && !a.atendido_en && (
+          {a.tipo !== 'propuesta_resuelta' && !a.atendido_en && (
             <Card.Actions>
               <Button onPress={() => decidir(a, false)}>Dejar como está</Button>
               <Button mode="contained" onPress={() => decidir(a, true)}>
-                Actualizar mi copia
+                {a.tipo === 'tarifa_nueva' ? 'Adoptar la nueva' : 'Actualizar mi copia'}
               </Button>
             </Card.Actions>
           )}
