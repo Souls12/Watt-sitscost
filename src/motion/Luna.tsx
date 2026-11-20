@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Canvas, Circle, Group, Rect, Skia } from '@shopify/react-native-skia';
+import { Canvas, Circle, Group, Rect, Skia } from 'react-native-skia';
 import { useDerivedValue, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useTheme } from 'react-native-paper';
 import { curva, dur } from './tokens';
