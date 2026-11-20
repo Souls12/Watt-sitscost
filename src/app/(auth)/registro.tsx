@@ -7,6 +7,7 @@ import { leerTarifa } from '@/lib/tarifa';
 import { Selector, type Eleccion, type Opcion } from '@/components/Selector';
 import { supabase } from '@/lib/supabase';
 import { urlRetorno } from '@/lib/sesion';
+import { useBienvenida } from '@/lib/ajustes';
 import { contrasenaValida, correoValido } from '@/lib/validacion';
 
 const completa = (e: Eleccion) => !!e && ('id' in e || e.propuesta.trim().length > 0);
@@ -28,6 +29,7 @@ export default function Registro() {
   const { texto: tarifa, campo: campoTarifa, validar: validarTarifa } = useTarifa();
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const { iniciarBienvenida, terminarBienvenida } = useBienvenida();
 
   useEffect(() => {
     supabase
@@ -62,6 +64,7 @@ export default function Registro() {
 
   async function crear() {
     setEnviando(true);
+    iniciarBienvenida();
     const { data, error } = await supabase.auth.signUp({
       email: correo.trim(),
       password: clave,
@@ -71,6 +74,7 @@ export default function Registro() {
       },
     });
     setEnviando(false);
+    if (error) terminarBienvenida();
     // Sin confirmación de correo, signUp ya trae la sesión y el guard de _layout entra a la app.
     if (!error) return data.session ? undefined : setPaso('listo');
     setError(
@@ -121,6 +125,9 @@ export default function Registro() {
           </HelperText>
           <Button mode="contained" onPress={seguir}>
             Seguir
+          </Button>
+          <Button icon="help-circle-outline" onPress={() => router.push('/tutorial')}>
+            ¿Cómo funciona?
           </Button>
           <Button onPress={() => router.back()}>Ya tengo cuenta</Button>
         </>
