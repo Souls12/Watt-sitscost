@@ -12,9 +12,10 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { darkTheme, lightTheme } from '@/theme';
 import { SesionProvider, useSesion } from '@/lib/sesion';
+import { AjustesProvider, useBienvenida, useTema } from '@/lib/ajustes';
+import { temaOscuro } from '@/lib/tema';
 
 export default function RootLayout() {
-  const dark = useColorScheme() === 'dark';
   const [loaded] = useFonts({
     ZillaSlab_500Medium,
     ZillaSlab_700Bold,
@@ -25,24 +26,35 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <PaperProvider theme={dark ? darkTheme : lightTheme}>
-          <StatusBar style={dark ? 'light' : 'dark'} />
-          <SesionProvider>
-            <Rutas />
-          </SesionProvider>
-        </PaperProvider>
+        <SesionProvider>
+          <AjustesProvider>
+            <Tematizado />
+          </AjustesProvider>
+        </SesionProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  );
+}
+
+function Tematizado() {
+  const [tema] = useTema();
+  const dark = temaOscuro(tema, useColorScheme());
+  return (
+    <PaperProvider theme={dark ? darkTheme : lightTheme}>
+      <StatusBar style={dark ? 'light' : 'dark'} />
+      <Rutas />
+    </PaperProvider>
   );
 }
 
 // Sin sesión solo se ve la entrada; con el enlace de recuperación, solo la nueva contraseña.
 function Rutas() {
   const { session, cargando, recuperando } = useSesion();
+  const { bienvenida } = useBienvenida();
   if (cargando) return null;
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={!!session && !recuperando}>
+      <Stack.Protected guard={!!session && !recuperando && !bienvenida}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="cuenta" />
         <Stack.Screen name="tarifa" />
@@ -50,6 +62,10 @@ function Rutas() {
         <Stack.Screen name="referencia" />
         <Stack.Screen name="aparato" />
       </Stack.Protected>
+      <Stack.Protected guard={!!session && !recuperando && bienvenida}>
+        <Stack.Screen name="bienvenida" />
+      </Stack.Protected>
+      <Stack.Screen name="tutorial" />
       <Stack.Protected guard={!!session && recuperando}>
         <Stack.Screen name="nueva-contrasena" />
       </Stack.Protected>
