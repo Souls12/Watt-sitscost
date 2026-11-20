@@ -11,3 +11,7 @@ Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-
 ### Domain docs
 
 Single-context: one `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+### Supabase
+
+Backend is Supabase project `jyvmnfcnfqjfmsdbtlne`, reached through the `supabase` MCP server in `.mcp.json`. Use the project skills `supabase` and `supabase-postgres-best-practices` (in `.claude/skills/`, pinned in `skills-lock.json`; restore with `npx skills experimental_install`) for any database, auth, RLS or migration work.
