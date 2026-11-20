@@ -1,6 +1,5 @@
 import { View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
-import { almanaque } from '@/theme';
 
 // Ilustración simplificada de una etiqueta de electrodoméstico: resalta dónde leer la potencia.
 export function GuiaEtiqueta() {
@@ -22,7 +21,7 @@ export function GuiaEtiqueta() {
           alignItems: 'center',
           gap: 8,
           borderWidth: 2,
-          borderColor: almanaque.rojo,
+          borderColor: theme.colors.primary,
           borderRadius: 8,
           padding: 8,
           backgroundColor: theme.colors.surface,
@@ -31,7 +30,7 @@ export function GuiaEtiqueta() {
         <Text variant="labelLarge" style={{ flex: 1 }}>
           Potencia / Power
         </Text>
-        <Text variant="titleMedium" style={{ color: almanaque.rojo }}>
+        <Text variant="titleMedium" style={{ color: theme.colors.primary }}>
           1.200 W
         </Text>
       </View>

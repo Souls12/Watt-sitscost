@@ -10,7 +10,7 @@ import { formatEnergy, formatMoney } from '@/lib/format';
 import { usePanelUso } from '@/lib/usePanelUso';
 import { useNoLeidos } from '@/lib/avisos';
 import { Cifra, Racha } from '@/motion';
-import { almanaque } from '@/theme';
+import { encabezado } from '@/theme';
 
 // Mes: consumo calculado del mes y racha, con el reporte de uso en 3 toques. El ticket del periodo lo completa.
 export default function Mes() {
@@ -33,7 +33,7 @@ export default function Mes() {
             <View>
               <IconButton
                 icon={noLeidos ? 'bell-badge-outline' : 'bell-outline'}
-                iconColor={almanaque.tinta}
+                iconColor={encabezado.texto}
                 accessibilityLabel={noLeidos ? `Avisos, ${noLeidos} sin leer` : 'Avisos'}
                 onPress={() => router.push('/avisos')}
               />
@@ -43,7 +43,7 @@ export default function Mes() {
             </View>
             <IconButton
               icon="account-circle"
-              iconColor={almanaque.tinta}
+              iconColor={encabezado.texto}
               accessibilityLabel="Mi cuenta"
               onPress={() => router.push('/cuenta')}
             />
@@ -98,8 +98,8 @@ export default function Mes() {
       <FAB
         icon="plus"
         label="Reportar uso"
-        style={{ position: 'absolute', right: 16, bottom: 16, backgroundColor: almanaque.rojo }}
-        color="#FFFFFF"
+        style={{ position: 'absolute', right: 16, bottom: 16 }}
+        variant="primary"
         onPress={() => setAbierta(true)}
       />
       <HojaReporte

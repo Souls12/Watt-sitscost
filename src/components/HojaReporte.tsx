@@ -64,7 +64,7 @@ export function HojaReporte({
                 title={a.cantidad > 1 ? `${a.nombre} ×${a.cantidad}` : a.nombre}
                 description={a.tipo}
                 left={() => (
-                  <View style={{ width: 6, alignSelf: 'stretch', borderRadius: 3, backgroundColor: colores[a.tipo] ?? '#8A8578' }} />
+                  <View style={{ width: 6, alignSelf: 'stretch', borderRadius: 3, backgroundColor: colores[a.tipo] ?? theme.colors.outline }} />
                 )}
                 onPress={() => elegir(a)}
               />

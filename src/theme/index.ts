@@ -31,6 +31,9 @@ export const almanaque = {
   verde: '#3D7F4E',
 };
 
+// Encabezado amarillo: par fijo en ambos temas (tinta sobre amarillo, ~11:1); no se invierte en oscuro.
+export const encabezado = { fondo: almanaque.amarillo, texto: almanaque.tinta };
+
 export const lightTheme: MD3Theme = {
   ...MD3LightTheme,
   fonts: configureFonts({ config: fontConfig }),

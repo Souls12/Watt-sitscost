@@ -1,7 +1,6 @@
 import { View } from 'react-native';
 import { SegmentedButtons, Text, useTheme } from 'react-native-paper';
 import { useState } from 'react';
-import { almanaque } from '@/theme';
 
 type Variante = 'afinia' | 'generica';
 
@@ -18,14 +17,14 @@ export function GuiaFactura() {
         flexDirection: 'row',
         alignItems: 'center',
         borderWidth: 2,
-        borderColor: almanaque.rojo,
+        borderColor: theme.colors.primary,
         borderRadius: 8,
         padding: 8,
         backgroundColor: theme.colors.surface,
       }}
     >
       <Text variant="labelLarge" style={{ flex: 1 }}>{etiqueta}</Text>
-      <Text variant="titleMedium" style={{ color: almanaque.rojo }}>{valor}</Text>
+      <Text variant="titleMedium" style={{ color: theme.colors.primary }}>{valor}</Text>
     </View>
   );
   const afinia = v === 'afinia';

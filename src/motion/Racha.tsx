@@ -7,12 +7,13 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { almanaque } from '@/theme';
+import { useTheme } from 'react-native-paper';
 import { Cifra } from './Cifra';
 import { dur, resorte } from './tokens';
 
 // Racha: el punto salta hacia arriba con un resorte al subir el número. Sin animación de pérdida: nunca se regaña.
 export function Racha({ dias }: { dias: number }) {
+  const { colors } = useTheme();
   const reducir = useReducedMotion();
   const y = useSharedValue(0);
   const o = useSharedValue(1);
@@ -29,7 +30,7 @@ export function Racha({ dias }: { dias: number }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 56 }}>
       <Animated.View
-        style={[{ width: 14, height: 14, borderRadius: 7, backgroundColor: almanaque.rojo }, punto]}
+        style={[{ width: 14, height: 14, borderRadius: 7, backgroundColor: colors.primary }, punto]}
       />
       <Cifra valor={String(dias)} />
     </View>

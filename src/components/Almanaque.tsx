@@ -1,7 +1,6 @@
 import { View } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Text, useTheme } from 'react-native-paper';
 import { Luna } from '@/motion';
-import { almanaque } from '@/theme';
 import type { DiaAlmanaque } from '@/lib/usePanelUso';
 
 const LETRAS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
@@ -9,6 +8,7 @@ const lunes = (iso: string) => (new Date(iso + 'T12:00:00Z').getUTCDay() + 6) % 
 
 // Cuadrícula L–D del periodo: cada día es una luna que se llena con lo gastado; hoy en rojo; punto = día reportado.
 export function Almanaque({ dias }: { dias: DiaAlmanaque[] }) {
+  const { colors } = useTheme();
   if (!dias.length) return null;
   const celdas: (DiaAlmanaque | null)[] = [...Array(lunes(dias[0].fecha)).fill(null), ...dias];
   while (celdas.length % 7) celdas.push(null);
@@ -34,7 +34,7 @@ export function Almanaque({ dias }: { dias: DiaAlmanaque[] }) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderWidth: d?.es_hoy ? 2 : d ? 1 : 0,
-                borderColor: d?.es_hoy ? almanaque.rojo : '#CFC8B8',
+                borderColor: d?.es_hoy ? colors.primary : colors.outline,
                 borderRadius: 6,
               }}
               accessibilityLabel={
@@ -46,7 +46,7 @@ export function Almanaque({ dias }: { dias: DiaAlmanaque[] }) {
                   <Text variant="labelSmall" style={{ position: 'absolute', top: 1, left: 3 }}>
                     {Number(d.fecha.slice(8))}
                   </Text>
-                  <Luna llenado={d.fraccion} size={26} color={d.fraccion >= 1 ? almanaque.amarillo : almanaque.verde} />
+                  <Luna llenado={d.fraccion} size={26} color={d.fraccion >= 1 ? colors.tertiary : colors.secondary} borde={colors.outline} />
                   {d.reportado && (
                     <View
                       style={{
@@ -55,7 +55,7 @@ export function Almanaque({ dias }: { dias: DiaAlmanaque[] }) {
                         width: 5,
                         height: 5,
                         borderRadius: 3,
-                        backgroundColor: almanaque.tinta,
+                        backgroundColor: colors.onSurface,
                       }}
                     />
                   )}

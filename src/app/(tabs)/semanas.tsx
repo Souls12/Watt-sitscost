@@ -8,7 +8,6 @@ import { useColoresTipo } from '@/lib/aparatos';
 import { formatEnergy } from '@/lib/format';
 import { rangoSemana, seriesPorAparato, type PuntoAparato, type Semana } from '@/lib/semanas';
 import { supabase } from '@/lib/supabase';
-import { almanaque } from '@/theme';
 
 const num = (x: unknown) => Number(x);
 
@@ -60,7 +59,7 @@ export default function Semanas() {
                     </Text>
                   </View>
                   <View style={{ height: 10, borderRadius: 5, backgroundColor: theme.colors.surfaceVariant, overflow: 'hidden' }}>
-                    <View style={{ width: `${ancho * 100}%`, height: 10, backgroundColor: sobre ? almanaque.amarillo : almanaque.verde }} />
+                    <View style={{ width: `${ancho * 100}%`, height: 10, backgroundColor: sobre ? theme.colors.tertiary : theme.colors.secondary }} />
                   </View>
                   {sobre && <Text variant="labelMedium">Por encima del presupuesto de la semana</Text>}
                 </View>
@@ -84,7 +83,7 @@ export default function Semanas() {
                       accessibilityLabel={`${s.nombre}: ${s.puntos.map((p, i) => `${rangoSemana(semanas[i].desde, semanas[i].hasta)} ${formatEnergy(p.kwh)}`).join(', ')}`}
                     >
                       <CartesianChart data={s.puntos} xKey="x" yKeys={['kwh']} domain={{ y: [0, maxY] }} domainPadding={{ left: 8, right: 8, top: 4 }}>
-                        {({ points }) => <Line points={points.kwh} color={colores[s.tipo] ?? almanaque.tinta} strokeWidth={2} />}
+                        {({ points }) => <Line points={points.kwh} color={colores[s.tipo] ?? theme.colors.onSurface} strokeWidth={2} />}
                       </CartesianChart>
                     </View>
                   </View>

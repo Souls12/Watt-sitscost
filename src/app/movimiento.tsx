@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 import { Cifra, HojaArrancada, Luna, Racha } from '@/motion';
-import { almanaque } from '@/theme';
+import { encabezado } from '@/theme';
 
 // Solo desarrollo: ruta /movimiento para ver cada pieza.
 export default function MuestraMovimiento() {
@@ -29,8 +29,8 @@ export default function MuestraMovimiento() {
 
       <Text variant="titleLarge">Hoja de almanaque</Text>
       <HojaArrancada arrancada={hoja}>
-        <View style={{ height: 120, backgroundColor: almanaque.amarillo, padding: 16 }}>
-          <Text variant="headlineMedium" style={{ color: almanaque.tinta }}>Noviembre</Text>
+        <View style={{ height: 120, backgroundColor: encabezado.fondo, padding: 16 }}>
+          <Text variant="headlineMedium" style={{ color: encabezado.texto }}>Noviembre</Text>
         </View>
       </HojaArrancada>
       <Button mode="contained" onPress={() => setHoja(!hoja)}>{hoja ? 'Restaurar' : 'Arrancar'}</Button>

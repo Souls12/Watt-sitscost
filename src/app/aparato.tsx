@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
-import { Button, Chip, Dialog, HelperText, Portal, Switch, Text, TextInput } from 'react-native-paper';
+import { Button, Chip, Dialog, HelperText, Portal, Switch, Text, TextInput, useTheme } from 'react-native-paper';
 import { Formulario } from '@/components/Formulario';
 import { GuiaEtiqueta } from '@/components/GuiaEtiqueta';
 import { type Aparato, type Referencia, nombreReferencia, useColoresTipo } from '@/lib/aparatos';
@@ -11,6 +11,7 @@ import { validarAparato } from '@/lib/validacion';
 // Tres modos según los parámetros: ?referencia=<id> (copia de una ficha), ?id=<id> (editar) o ninguno (aparato propio).
 export default function AparatoPantalla() {
   const { referencia, id } = useLocalSearchParams<{ referencia?: string; id?: string }>();
+  const theme = useTheme();
   const colores = useColoresTipo();
   const [tipo, setTipo] = useState('Otro');
   const [refId, setRefId] = useState<number | null>(null);
@@ -146,7 +147,7 @@ export default function AparatoPantalla() {
         Guardar
       </Button>
       {id && (
-        <Button textColor="#8A1F1A" onPress={() => setConfirmar(true)}>
+        <Button textColor={theme.colors.error} onPress={() => setConfirmar(true)}>
           Eliminar
         </Button>
       )}

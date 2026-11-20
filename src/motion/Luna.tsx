@@ -1,13 +1,14 @@
 import { useEffect, useMemo } from 'react';
 import { Canvas, Circle, Group, Rect, Skia } from '@shopify/react-native-skia';
 import { useDerivedValue, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
-import { almanaque } from '@/theme';
+import { useTheme } from 'react-native-paper';
 import { curva, dur } from './tokens';
 
 type Props = { llenado: number; size?: number; color?: string; borde?: string };
 
 // Luna del día: el relleno sube desde abajo, como llenar un vaso. Con quitar animaciones, corte instantáneo.
-export function Luna({ llenado, size = 64, color = almanaque.amarillo, borde = '#CFC8B8' }: Props) {
+export function Luna({ llenado, size = 64, color, borde }: Props) {
+  const { colors } = useTheme();
   const reducir = useReducedMotion();
   const v = useSharedValue(Math.min(1, Math.max(0, llenado)));
   useEffect(() => {
@@ -23,9 +24,9 @@ export function Luna({ llenado, size = 64, color = almanaque.amarillo, borde = '
   return (
     <Canvas style={{ width: size, height: size }}>
       <Group clip={clip}>
-        <Rect x={0} y={y} width={size} height={size} color={color} />
+        <Rect x={0} y={y} width={size} height={size} color={color ?? colors.tertiary} />
       </Group>
-      <Circle cx={size / 2} cy={size / 2} r={r} color={borde} style="stroke" strokeWidth={2} />
+      <Circle cx={size / 2} cy={size / 2} r={r} color={borde ?? colors.outline} style="stroke" strokeWidth={2} />
     </Canvas>
   );
 }

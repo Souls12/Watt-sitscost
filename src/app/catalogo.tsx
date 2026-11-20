@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import { FlatList, View } from 'react-native';
-import { Button, List, Searchbar } from 'react-native-paper';
+import { Button, List, useTheme, Searchbar } from 'react-native-paper';
 import { Pantalla } from '@/components/Pantalla';
 import { type Referencia, nombreReferencia, useColoresTipo } from '@/lib/aparatos';
 import { formatPower } from '@/lib/format';
@@ -13,6 +13,7 @@ const sinTildes = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLo
 export default function Catalogo() {
   const [todos, setTodos] = useState<Referencia[]>([]);
   const [q, setQ] = useState('');
+  const theme = useTheme();
   const colores = useColoresTipo();
 
   useEffect(() => {
@@ -46,7 +47,7 @@ export default function Catalogo() {
           <List.Item
             title={nombreReferencia(r)}
             description={`${r.tipo} · ${formatPower(r.potencia_w)}`}
-            left={() => <View style={{ width: 6, alignSelf: 'stretch', borderRadius: 3, backgroundColor: colores[r.tipo] ?? '#8A8578', marginLeft: 16 }} />}
+            left={() => <View style={{ width: 6, alignSelf: 'stretch', borderRadius: 3, backgroundColor: colores[r.tipo] ?? theme.colors.outline, marginLeft: 16 }} />}
             onPress={() => router.push({ pathname: '/referencia', params: { id: String(r.id) } })}
           />
         )}

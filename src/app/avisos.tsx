@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { View } from 'react-native';
-import { Button, Card, Text } from 'react-native-paper';
+import { Button, Card, Text, useTheme } from 'react-native-paper';
 import { Formulario } from '@/components/Formulario';
 import { type Aviso } from '@/lib/avisos';
 import { supabase } from '@/lib/supabase';
-import { almanaque } from '@/theme';
 
 const fecha = (iso: string) => new Date(iso).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
 
 // Bandeja de avisos. Al abrirla, los no leídos quedan leídos (se resaltan solo esta vez).
 export default function Avisos() {
+  const theme = useTheme();
   const [avisos, setAvisos] = useState<Aviso[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +40,7 @@ export default function Avisos() {
         <Card
           key={a.id}
           mode="outlined"
-          style={!a.leido_en ? { borderLeftWidth: 6, borderLeftColor: almanaque.amarillo } : undefined}
+          style={!a.leido_en ? { backgroundColor: theme.colors.tertiaryContainer } : undefined}
         >
           <Card.Title title={a.titulo} subtitle={fecha(a.creado_en)} />
           <Card.Content>
