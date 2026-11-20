@@ -1,5 +1,138 @@
-import { Pantalla } from '@/components/Pantalla';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { Button, Dialog, List, Portal, Text, TextInput } from 'react-native-paper';
+import { Formulario } from '@/components/Formulario';
+import { GuiaFactura } from '@/components/GuiaFactura';
+import { useSesion } from '@/lib/sesion';
+import { supabase } from '@/lib/supabase';
+import { formatEnergy, formatMoney } from '@/lib/format';
+import { META_AVISO, PORCENTAJES, calcularMeta, validarFactura } from '@/lib/factura';
 
-export default function Factura() {
-  return <Pantalla titulo="Factura" />;
+type Factura = { id: number; kwh_facturado: number; inicio: string; fin: string };
+type Periodo = { inicio: string; fin_estimado: string; porcentaje: number; meta_kwh: number; estado: string };
+
+const hoyLocal = () => new Date().toISOString().slice(0, 10); // solo para validar rápido; la base decide
+
+export default function FacturaTab() {
+  const { session } = useSesion();
+  const [facturas, setFacturas] = useState<Factura[]>([]);
+  const [periodo, setPeriodo] = useState<Periodo | null>(null);
+  const [tarifa, setTarifa] = useState(0);
+  const [editando, setEditando] = useState<number | null>(null);
+  const [kwh, setKwh] = useState('');
+  const [inicio, setInicio] = useState('');
+  const [fin, setFin] = useState('');
+  const [pct, setPct] = useState('10');
+  const [error, setError] = useState<string | null>(null);
+  const [confirmar, setConfirmar] = useState(false);
+
+  const cargar = useCallback(() => {
+    supabase.from('facturas').select('id, kwh_facturado, inicio, fin').order('fin', { ascending: false })
+      .then(({ data }) => setFacturas((data ?? []) as Factura[]));
+    supabase.from('periodo_actual').select('inicio, fin_estimado, porcentaje, meta_kwh, estado').maybeSingle()
+      .then(({ data }) => setPeriodo(data as Periodo | null));
+    if (session) supabase.rpc('tarifa_vigente', { p_usuario: session.user.id }).then(({ data }) => setTarifa(Number(data ?? 0)));
+  }, [session]);
+  useFocusEffect(cargar);
+
+  const ultima = facturas[0];
+  const porcentaje = Number(pct.replace(',', '.'));
+  const pctValido = porcentaje > 0 && porcentaje < 100;
+  const meta = ultima && pctValido ? calcularMeta(ultima.kwh_facturado, porcentaje, tarifa) : null;
+
+  const guardarFactura = async () => {
+    const r = validarFactura(kwh, inicio, fin, hoyLocal());
+    if (!r.ok) return setError(r.error);
+    const { error: e } = editando
+      ? await supabase.from('facturas').update(r.valor).eq('id', editando)
+      : await supabase.from('facturas').insert(r.valor);
+    if (e) {
+      setError(e.code === '23P01' ? 'Esas fechas se cruzan con otra factura.' : e.message);
+      return;
+    }
+    setError(null); setEditando(null); setKwh(''); setInicio(''); setFin('');
+    cargar();
+  };
+
+  const corregir = (f: Factura) => {
+    setEditando(f.id); setKwh(String(f.kwh_facturado)); setInicio(f.inicio); setFin(f.fin);
+  };
+  const eliminar = async (id: number) => {
+    const { error: e } = await supabase.from('facturas').delete().eq('id', id);
+    setError(e ? 'No pudimos eliminar la factura.' : null);
+    cargar();
+  };
+
+  const crearPeriodo = async () => {
+    setConfirmar(false);
+    if (!ultima) return;
+    const { error: e } = await supabase.from('periodos').insert({ factura_base_id: ultima.id, porcentaje });
+    setError(e ? (e.code === '23505' ? 'Ya tienes un periodo abierto.' : 'No pudimos crear el periodo.') : null);
+    cargar();
+  };
+  const definirMeta = () => {
+    if (!pctValido) return setError('Escribe un porcentaje entre 1 y 99.');
+    if (porcentaje > META_AVISO) return setConfirmar(true);
+    crearPeriodo();
+  };
+
+  return (
+    <Formulario titulo="Factura">
+      <GuiaFactura />
+      <TextInput label="Consumo facturado (kWh)" value={kwh} onChangeText={setKwh} keyboardType="decimal-pad" />
+      <TextInput label="Inicio del consumo (AAAA-MM-DD)" value={inicio} onChangeText={setInicio} />
+      <TextInput label="Fin del consumo (AAAA-MM-DD)" value={fin} onChangeText={setFin} />
+      {error && <Text variant="bodySmall">{error}</Text>}
+      <Button mode="contained" onPress={guardarFactura}>{editando ? 'Guardar corrección' : 'Registrar factura'}</Button>
+      {editando && <Button onPress={() => { setEditando(null); setKwh(''); setInicio(''); setFin(''); }}>Cancelar</Button>}
+
+      <List.Subheader>Mis facturas</List.Subheader>
+      {facturas.map((f) => (
+        <List.Item
+          key={f.id}
+          title={formatEnergy(f.kwh_facturado)}
+          description={`${f.inicio} a ${f.fin}`}
+          right={() => (
+            <>
+              <Button onPress={() => corregir(f)}>Corregir</Button>
+              <Button onPress={() => eliminar(f.id)}>Eliminar</Button>
+            </>
+          )}
+        />
+      ))}
+
+      <List.Subheader>Mi meta</List.Subheader>
+      {periodo ? (
+        <Text variant="bodyLarge">
+          {`Periodo del ${periodo.inicio} al ${periodo.fin_estimado}${periodo.estado === 'extendido' ? ' (extendido)' : ''}: meta de ${formatEnergy(periodo.meta_kwh)}, ${periodo.porcentaje} % menos.`}
+        </Text>
+      ) : ultima ? (
+        <>
+          {PORCENTAJES.map((p) => (
+            <Button key={p} mode={porcentaje === p ? 'contained-tonal' : 'outlined'} onPress={() => setPct(String(p))}>{`${p} %`}</Button>
+          ))}
+          <TextInput label="Otro porcentaje de reducción" value={pct} onChangeText={setPct} keyboardType="decimal-pad" />
+          {meta && (
+            <Text variant="titleMedium">{`Meta: ${formatEnergy(meta.kwh)} · ${formatMoney(meta.pesos)}`}</Text>
+          )}
+          <Button mode="contained" onPress={definirMeta}>Empezar mi periodo</Button>
+        </>
+      ) : (
+        <Text variant="bodyMedium">Registra tu factura para definir una meta.</Text>
+      )}
+
+      <Portal>
+        <Dialog visible={confirmar} onDismiss={() => setConfirmar(false)}>
+          <Dialog.Title>Una meta ambiciosa</Dialog.Title>
+          <Dialog.Content>
+            <Text>{`Reducir más de ${META_AVISO} % es difícil de sostener. ¿Quieres usar ${porcentaje} % de todos modos?`}</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setConfirmar(false)}>Cambiar</Button>
+            <Button onPress={crearPeriodo}>Sí, usar {porcentaje} %</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </Formulario>
+  );
 }
