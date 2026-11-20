@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { Button, HelperText, SegmentedButtons, Text, TextInput } from 'react-native-paper';
 import { Formulario } from '@/components/Formulario';
+import { useTarifa } from '@/components/CampoTarifa';
+import { leerTarifa } from '@/lib/tarifa';
 import { Selector, type Eleccion, type Opcion } from '@/components/Selector';
 import { supabase } from '@/lib/supabase';
 import { urlRetorno } from '@/lib/sesion';
@@ -14,7 +16,7 @@ const datosDe = (campo: 'ciudad' | 'empresa', e: Eleccion) =>
   e && 'id' in e ? { [`${campo}_id`]: e.id } : { [`${campo}_propuesta`]: e?.propuesta.trim() };
 
 export default function Registro() {
-  const [paso, setPaso] = useState<1 | 2 | 'listo'>(1);
+  const [paso, setPaso] = useState<1 | 2 | 3 | 'listo'>(1);
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [clave, setClave] = useState('');
@@ -23,6 +25,7 @@ export default function Registro() {
   const [estrato, setEstrato] = useState('');
   const [ciudades, setCiudades] = useState<Opcion[]>([]);
   const [empresas, setEmpresas] = useState<Opcion[]>([]);
+  const { texto: tarifa, campo: campoTarifa, validar: validarTarifa } = useTarifa();
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -50,17 +53,21 @@ export default function Registro() {
     setPaso(2);
   }
 
-  async function crear() {
+  function seguir2() {
     if (!completa(ciudad) || !estrato || !completa(empresa))
       return setError('Elige tu ciudad, tu estrato y tu empresa proveedora.');
     setError(null);
+    setPaso(3);
+  }
+
+  async function crear() {
     setEnviando(true);
     const { error } = await supabase.auth.signUp({
       email: correo.trim(),
       password: clave,
       options: {
         emailRedirectTo: urlRetorno,
-        data: { nombre: nombre.trim(), estrato: Number(estrato), ...datosDe('ciudad', ciudad), ...datosDe('empresa', empresa) },
+        data: { nombre: nombre.trim(), estrato: Number(estrato), tarifa_kwh: leerTarifa(tarifa), ...datosDe('ciudad', ciudad), ...datosDe('empresa', empresa) },
       },
     });
     setEnviando(false);
@@ -86,8 +93,8 @@ export default function Registro() {
     );
 
   return (
-    <Formulario titulo={paso === 1 ? 'Tu cuenta' : 'Dónde vives'}>
-      <Text variant="labelLarge">Paso {paso} de 2</Text>
+    <Formulario titulo={paso === 1 ? 'Tu cuenta' : paso === 2 ? 'Dónde vives' : 'Tu tarifa'}>
+      <Text variant="labelLarge">Paso {paso} de 3</Text>
       {paso === 1 ? (
         <>
           <TextInput label="Nombre" mode="outlined" value={nombre} onChangeText={setNombre} autoComplete="name" />
@@ -116,7 +123,7 @@ export default function Registro() {
           </Button>
           <Button onPress={() => router.back()}>Ya tengo cuenta</Button>
         </>
-      ) : (
+      ) : paso === 2 ? (
         <>
           <Selector
             etiqueta="Ciudad"
@@ -141,10 +148,21 @@ export default function Registro() {
           <HelperText type="error" visible={!!error}>
             {error}
           </HelperText>
-          <Button mode="contained" onPress={crear} loading={enviando} disabled={enviando}>
-            Crear cuenta
+          <Button mode="contained" onPress={seguir2}>
+            Seguir
           </Button>
           <Button onPress={() => setPaso(1)}>Atrás</Button>
+        </>
+      ) : (
+        <>
+          {campoTarifa}
+          <HelperText type="error" visible={!!error}>
+            {error}
+          </HelperText>
+          <Button mode="contained" onPress={() => validarTarifa(crear)} loading={enviando} disabled={enviando}>
+            Crear cuenta
+          </Button>
+          <Button onPress={() => setPaso(2)}>Atrás</Button>
         </>
       )}
     </Formulario>
