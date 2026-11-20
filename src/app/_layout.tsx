@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { darkTheme, lightTheme } from '@/theme';
+import { SesionProvider, useSesion } from '@/lib/sesion';
 
 export default function RootLayout() {
   const dark = useColorScheme() === 'dark';
@@ -26,9 +27,31 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <PaperProvider theme={dark ? darkTheme : lightTheme}>
           <StatusBar style={dark ? 'light' : 'dark'} />
-          <Stack screenOptions={{ headerShown: false }} />
+          <SesionProvider>
+            <Rutas />
+          </SesionProvider>
         </PaperProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  );
+}
+
+// Sin sesión solo se ve la entrada; con el enlace de recuperación, solo la nueva contraseña.
+function Rutas() {
+  const { session, cargando, recuperando } = useSesion();
+  if (cargando) return null;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={!!session && !recuperando}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="cuenta" />
+      </Stack.Protected>
+      <Stack.Protected guard={!!session && recuperando}>
+        <Stack.Screen name="nueva-contrasena" />
+      </Stack.Protected>
+      <Stack.Protected guard={!session}>
+        <Stack.Screen name="(auth)" />
+      </Stack.Protected>
+    </Stack>
   );
 }

@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { View } from 'react-native';
+import { router } from 'expo-router';
+import { IconButton } from 'react-native-paper';
 import { Canvas, Circle } from '@shopify/react-native-skia';
 import { useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Pantalla } from '@/components/Pantalla';
@@ -14,7 +16,17 @@ export default function Mes() {
   const r = useDerivedValue(() => 28 * fill.value);
   return (
     <View style={{ flex: 1 }}>
-      <Pantalla titulo="Mes" />
+      <Pantalla
+        titulo="Mes"
+        derecha={
+          <IconButton
+            icon="account-circle"
+            iconColor={almanaque.tinta}
+            accessibilityLabel="Mi cuenta"
+            onPress={() => router.push('/cuenta')}
+          />
+        }
+      />
       <Canvas style={{ width: 64, height: 64, margin: 16 }}>
         <Circle cx={32} cy={32} r={28} color="#CFC8B8" style="stroke" strokeWidth={2} />
         <Circle cx={32} cy={32} r={r} color={almanaque.amarillo} />
