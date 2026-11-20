@@ -61,6 +61,8 @@ function Rutas() {
         <Stack.Screen name="catalogo" />
         <Stack.Screen name="referencia" />
         <Stack.Screen name="aparato" />
+        <Stack.Screen name="avisos" />
+        <Stack.Screen name="revision" />
       </Stack.Protected>
       <Stack.Protected guard={!!session && !recuperando && bienvenida}>
         <Stack.Screen name="bienvenida" />

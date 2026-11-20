@@ -2,18 +2,20 @@ import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Almanaque } from '@/components/Almanaque';
 import { router, useFocusEffect } from 'expo-router';
-import { FAB, IconButton, Snackbar, Text } from 'react-native-paper';
+import { Badge, FAB, IconButton, Snackbar, Text } from 'react-native-paper';
 import { CierrePeriodo } from '@/components/CierrePeriodo';
 import { HojaReporte } from '@/components/HojaReporte';
 import { Pantalla } from '@/components/Pantalla';
 import { formatEnergy, formatMoney } from '@/lib/format';
 import { usePanelUso } from '@/lib/usePanelUso';
+import { useNoLeidos } from '@/lib/avisos';
 import { Cifra, Racha } from '@/motion';
 import { almanaque } from '@/theme';
 
 // Mes: consumo calculado del mes y racha, con el reporte de uso en 3 toques. El ticket del periodo lo completa.
 export default function Mes() {
   const { panel, hoy, dias, cifra, cargar, reportar } = usePanelUso();
+  const noLeidos = useNoLeidos();
   const [abierta, setAbierta] = useState(false);
   const [error, setError] = useState<string | null>(null);
   useFocusEffect(
@@ -27,12 +29,25 @@ export default function Mes() {
       <Pantalla
         titulo="Mes"
         derecha={
-          <IconButton
-            icon="account-circle"
-            iconColor={almanaque.tinta}
-            accessibilityLabel="Mi cuenta"
-            onPress={() => router.push('/cuenta')}
-          />
+          <>
+            <View>
+              <IconButton
+                icon={noLeidos ? 'bell-badge-outline' : 'bell-outline'}
+                iconColor={almanaque.tinta}
+                accessibilityLabel={noLeidos ? `Avisos, ${noLeidos} sin leer` : 'Avisos'}
+                onPress={() => router.push('/avisos')}
+              />
+              <Badge visible={noLeidos > 0} size={18} style={{ position: 'absolute', top: 4, right: 4 }}>
+                {noLeidos}
+              </Badge>
+            </View>
+            <IconButton
+              icon="account-circle"
+              iconColor={almanaque.tinta}
+              accessibilityLabel="Mi cuenta"
+              onPress={() => router.push('/cuenta')}
+            />
+          </>
         }
       >
         <ScrollView contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: 96 }}>
