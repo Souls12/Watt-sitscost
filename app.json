@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Watt'sitcost",
+    "slug": "watts-itcost",
+    "scheme": "wattsitcost",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "platforms": [
+      "android"
+    ],
+    "android": {
+      "package": "com.souls12.wattsitcost",
+      "adaptiveIcon": {
+        "backgroundColor": "#F6C12E",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "@react-native-vector-icons/material-design-icons"
+    ]
+  }
+}
