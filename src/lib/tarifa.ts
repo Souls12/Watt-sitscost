@@ -14,3 +14,12 @@ export function revisarTarifa(texto: string): 'ok' | 'invalida' | 'confirmar' {
   if (v === null || v <= 0) return 'invalida';
   return v > TARIFA_CONFIRMAR ? 'confirmar' : 'ok';
 }
+
+/** Tarifa efectiva en $/kWh = tarifa − subsidio (subsidio vacío = 0), con coma decimal; null si no se puede calcular o no queda mayor que 0. */
+export function tarifaNeta(tarifa: string, subsidio: string): string | null {
+  const t = leerNumero(tarifa);
+  const s = subsidio.trim() === '' ? 0 : leerNumero(subsidio);
+  if (Number.isNaN(t) || Number.isNaN(s)) return null;
+  const neta = Math.round((t - s) * 100) / 100;
+  return neta > 0 ? String(neta).replace('.', ',') : null;
+}

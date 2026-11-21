@@ -133,7 +133,7 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
                 <Text variant="bodyMedium">
                   Si no la encuentras, deja el valor que ves: es aproximado y lo puedes cambiar después en Mi cuenta, en Mi tarifa.
                 </Text>
-                <GuiaFactura foco="tarifa" />
+                <GuiaFactura foco="tarifa" onTarifa={setTexto} />
               </Animated.View>
             )}
             {err}
