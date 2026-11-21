@@ -54,10 +54,10 @@ function Tematizado() {
 function Rutas() {
   const { session, cargando, recuperando } = useSesion();
   const { bienvenida } = useBienvenida();
-  if (cargando) return null;
+  if (cargando || (session && bienvenida === null)) return null;
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={!!session && !recuperando && !bienvenida}>
+      <Stack.Protected guard={!!session && !recuperando && bienvenida === false}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="cuenta" />
         <Stack.Screen name="tarifa" />
@@ -67,7 +67,7 @@ function Rutas() {
         <Stack.Screen name="avisos" />
         <Stack.Screen name="revision" />
       </Stack.Protected>
-      <Stack.Protected guard={!!session && !recuperando && bienvenida}>
+      <Stack.Protected guard={!!session && !recuperando && bienvenida === true}>
         <Stack.Screen name="bienvenida" />
       </Stack.Protected>
       <Stack.Screen name="tutorial" />

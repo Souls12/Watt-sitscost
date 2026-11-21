@@ -13,14 +13,12 @@ type Ajustes = {
   setTema: (t: Tema) => void;
   cifra: Cifra; // cifra principal: la que el Mes muestra grande (kWh por defecto)
   setCifra: (c: Cifra) => void;
-  bienvenida: boolean; // recién registrada en este teléfono: falta recorrer la bienvenida
-  iniciarBienvenida: () => void;
+  bienvenida: boolean | null; // la cuenta aún no recorrió la bienvenida (null: se está consultando)
   terminarBienvenida: () => void;
 };
 
 const Contexto = createContext<Ajustes | null>(null);
 const CLAVE_TEMA = 'ajuste_tema';
-const CLAVE_BIENVENIDA = 'bienvenida_pendiente';
 
 function useAjustes() {
   const a = useContext(Contexto);
@@ -38,29 +36,33 @@ export const useTema = () => {
   return [tema, setTema] as const;
 };
 export const useBienvenida = () => {
-  const { bienvenida, iniciarBienvenida, terminarBienvenida } = useAjustes();
-  return { bienvenida, iniciarBienvenida, terminarBienvenida };
+  const { bienvenida, terminarBienvenida } = useAjustes();
+  return { bienvenida, terminarBienvenida };
 };
 
 export function AjustesProvider({ children }: { children: ReactNode }) {
   const { session } = useSesion();
   const [tema, setTemaEstado] = useState<Tema>('claro');
   const [cifra, setCifraEstado] = useState<Cifra>('kwh');
-  const [bienvenida, setBienvenida] = useState(false);
+  const [bienvenida, setBienvenida] = useState<boolean | null>(null);
   const id = session?.user.id;
 
   useEffect(() => {
     AsyncStorage.getItem(CLAVE_TEMA).then((t) => t && setTemaEstado(t as Tema)).catch(() => {});
-    AsyncStorage.getItem(CLAVE_BIENVENIDA).then((v) => setBienvenida(v === '1')).catch(() => {});
   }, []);
 
   useEffect(() => {
+    setBienvenida(null);
     if (!id) return;
     supabase
       .from('perfiles')
-      .select('cifra_principal')
+      .select('cifra_principal, bienvenida_completada')
       .single()
-      .then(({ data }) => data && setCifraEstado(data.cifra_principal as Cifra));
+      .then(({ data }) => {
+        if (data) setCifraEstado(data.cifra_principal as Cifra);
+        // Si no se pudo consultar, mejor dejar entrar que bloquear la app.
+        setBienvenida(data ? !data.bienvenida_completada : false);
+      });
   }, [id]);
 
   const setTema = (t: Tema) => {
@@ -72,18 +74,14 @@ export function AjustesProvider({ children }: { children: ReactNode }) {
     setCifraEstado(c);
     supabase.from('perfiles').update({ cifra_principal: c }).eq('id', id!).then(({ error }) => error && setCifraEstado(antes));
   };
-  // Se marca antes de crear la cuenta: al llegar la sesión, el guard de rutas ya lleva a la bienvenida.
-  const iniciarBienvenida = () => {
-    setBienvenida(true);
-    AsyncStorage.setItem(CLAVE_BIENVENIDA, '1').catch(() => {});
-  };
+  // La bienvenida es de la cuenta: se marca en el perfil y no vuelve en otro teléfono.
   const terminarBienvenida = () => {
     setBienvenida(false);
-    AsyncStorage.removeItem(CLAVE_BIENVENIDA).catch(() => {});
+    supabase.from('perfiles').update({ bienvenida_completada: true }).eq('id', id!).then(() => {});
   };
 
   return (
-    <Contexto.Provider value={{ tema, setTema, cifra, setCifra, bienvenida, iniciarBienvenida, terminarBienvenida }}>
+    <Contexto.Provider value={{ tema, setTema, cifra, setCifra, bienvenida, terminarBienvenida }}>
       {children}
     </Contexto.Provider>
   );

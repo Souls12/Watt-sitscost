@@ -54,5 +54,5 @@ export function useTarifa() {
       </Portal>
     </>
   );
-  return { texto, campo, validar };
+  return { texto, setTexto, campo, validar };
 }
