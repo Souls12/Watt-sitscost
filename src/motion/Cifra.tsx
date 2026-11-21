@@ -1,6 +1,6 @@
 import { type TextStyle, View, useWindowDimensions } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutUp, useReducedMotion } from 'react-native-reanimated';
+import Animated, { SlideInDown, SlideOutUp } from 'react-native-reanimated';
 import { curva, dur } from './tokens';
 
 type Props = { valor: string; style?: TextStyle };
@@ -11,9 +11,8 @@ type Props = { valor: string; style?: TextStyle };
 export function Cifra({ valor, style }: Props) {
   const { fonts: tipos } = useTheme();
   const { fontScale } = useWindowDimensions();
-  const reducir = useReducedMotion();
-  const entra = reducir ? FadeIn.duration(dur.corta) : SlideInDown.duration(dur.media).easing(curva.sale);
-  const sale = reducir ? FadeOut.duration(dur.corta) : SlideOutUp.duration(dur.media).easing(curva.entra);
+  const entra = SlideInDown.duration(dur.media).easing(curva.sale);
+  const sale = SlideOutUp.duration(dur.media).easing(curva.entra);
   return (
     <View style={{ minHeight: (tipos.displaySmall.lineHeight ?? 48) * fontScale }}>
       <Animated.Text key={valor} entering={entra} exiting={sale} style={[tipos.displaySmall, style]}>

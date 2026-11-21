@@ -1,20 +1,19 @@
 import { useEffect, useMemo } from 'react';
 import { Canvas, Circle, Group, Rect, Skia } from 'react-native-skia';
-import { useDerivedValue, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useTheme } from 'react-native-paper';
 import { curva, dur } from './tokens';
 
 type Props = { llenado: number; size?: number; color?: string; borde?: string };
 
-// Luna del día: el relleno sube desde abajo, como llenar un vaso. Con quitar animaciones, corte instantáneo.
+// Luna del día: el relleno sube desde abajo, como llenar un vaso.
 export function Luna({ llenado, size = 64, color, borde }: Props) {
   const { colors } = useTheme();
-  const reducir = useReducedMotion();
   const v = useSharedValue(Math.min(1, Math.max(0, llenado)));
   useEffect(() => {
     const destino = Math.min(1, Math.max(0, llenado));
-    v.value = reducir ? destino : withTiming(destino, { duration: dur.luna, easing: curva.sale });
-  }, [llenado, reducir, v]);
+    v.value = withTiming(destino, { duration: dur.luna, easing: curva.sale });
+  }, [llenado, v]);
 
   const r = size / 2 - 2;
   // Un rrect con radio = mitad del lado es un círculo.

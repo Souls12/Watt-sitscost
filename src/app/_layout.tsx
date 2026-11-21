@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
+import { ReduceMotion, ReducedMotionConfig } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { darkTheme, lightTheme } from '@/theme';
 import { SesionProvider, useSesion } from '@/lib/sesion';
@@ -26,6 +27,8 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
+        {/* Las animaciones siempre se reproducen (decisión del usuario): Reanimated por omisión sigue el ajuste del sistema. */}
+        <ReducedMotionConfig mode={ReduceMotion.Never} />
         <SesionProvider>
           <AjustesProvider>
             <Tematizado />

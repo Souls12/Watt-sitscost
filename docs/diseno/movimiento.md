@@ -20,7 +20,7 @@ Nota: las referencias se citan de conocimiento previo, con enlaces a las página
 
 | Nombre | ms | Uso |
 |---|---|---|
-| corta | 150 | Fundidos (modo sin movimiento) |
+| corta | 150 | Fundidos |
 | media | 280 | Cifra que cambia, transición de pestañas |
 | luna | 400 | Luna que se llena (momento distintivo de la app) |
 | hoja | 520 | Hoja arrancada, la más larga porque cierra un periodo |
@@ -43,17 +43,9 @@ Nada pasa de 600 ms. Las acciones repetidas (cifra) usan la duración media.
 - Pestañas: la nueva entra desde el lado donde está en la barra (Mes, Semanas, Aparatos, Factura de izquierda a derecha), sentido de lectura.
 - Hoja de almanaque: se arranca hacia la izquierda con un giro de -18 grados, cae y se desvanece en el último 30 %. La hoja nueva ya está debajo.
 
-## Quitar animaciones (reduce motion)
+## Quitar animaciones
 
-Se lee con `useReducedMotion()` de Reanimated, que sigue el ajuste del sistema.
-
-| Pieza | Con movimiento reducido |
-|---|---|
-| Luna | Corte instantáneo al valor final |
-| Cifra | Fundido de 150 ms, sin desplazamiento |
-| Racha | Sin salto; el punto hace un fundido corto |
-| Pestañas | Corte instantáneo (`animation: 'none'`) |
-| Hoja | Fundido de 150 ms, sin giro ni caída |
+Por decisión del usuario (2026-11-21), las animaciones se reproducen siempre: la app no atiende el ajuste del sistema "quitar animaciones". No hay ramas de movimiento reducido en `src/motion/*` ni en pantallas, y no se deben añadir. Para que Reanimated tampoco las apague por su cuenta (su valor por omisión sigue al sistema), la raíz monta `<ReducedMotionConfig mode={ReduceMotion.Never} />`.
 
 ## Piezas (src/motion)
 
