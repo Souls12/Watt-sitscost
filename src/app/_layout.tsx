@@ -72,13 +72,14 @@ function Rutas() {
       <Stack.Protected guard={!!session && !recuperando && bienvenida === true}>
         <Stack.Screen name="bienvenida" options={{ animation: 'fade' }} />
       </Stack.Protected>
-      <Stack.Screen name="tutorial" />
       <Stack.Protected guard={!!session && recuperando}>
         <Stack.Screen name="nueva-contrasena" options={{ animation: 'fade' }} />
       </Stack.Protected>
       <Stack.Protected guard={!session}>
         <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
       </Stack.Protected>
+      {/* Al final: si "/" está bloqueada, Expo Router abre la primera pantalla disponible, y no debe ser esta. */}
+      <Stack.Screen name="tutorial" />
     </Stack>
   );
 }

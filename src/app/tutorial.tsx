@@ -34,7 +34,8 @@ export default function Tutorial() {
           </List.Accordion>
         ))}
       </List.AccordionGroup>
-      <Button onPress={() => router.back()}>Volver</Button>
+      {/* Sin historial (p. ej. abierta al iniciar), "/" lleva a la pantalla que la sesión permite. */}
+      <Button onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}>Volver</Button>
     </Formulario>
   );
 }
