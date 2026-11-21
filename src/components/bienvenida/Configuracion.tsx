@@ -6,6 +6,7 @@ import { CampoFecha } from '@/components/CampoFecha';
 import { useTarifa } from '@/components/CampoTarifa';
 import { Formulario } from '@/components/Formulario';
 import { GuiaFactura } from '@/components/GuiaFactura';
+import { Nota } from '@/components/Nota';
 import { type Referencia } from '@/lib/aparatos';
 import { TIPOS_COMUNES, referenciaTipica } from '@/lib/bienvenida';
 import { PORCENTAJES, calcularMeta, validarFactura } from '@/lib/factura';
@@ -40,7 +41,7 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
   };
 
   // Tarifa
-  const { texto, setTexto, campo, validar } = useTarifa();
+  const { texto, setTexto, campo, validar } = useTarifa(false);
   const [tarifaActual, setTarifaActual] = useState<number | null>(null);
   const [explicar, setExplicar] = useState(false);
   // Aparatos
@@ -183,6 +184,7 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
                 <Text variant="bodyMedium">
                   Si no la encuentras, deja el valor que ves: es aproximado y lo puedes cambiar después en Mi cuenta, en Mi tarifa.
                 </Text>
+                <GuiaFactura foco="tarifa" />
               </Animated.View>
             )}
             {err}
@@ -235,6 +237,9 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
                 );
               })}
             </View>
+            <Nota>La nevera no trabaja todo el día: su motor se prende y apaga. Contamos unas 8 h al día.</Nota>
+            <Nota>Usamos la potencia típica de cada tipo de aparato; puedes ajustarla en Aparatos.</Nota>
+            <Nota>La nevera se registra sola cada noche, así no tienes que reportarla.</Nota>
             <Text variant="bodyMedium">¿Falta alguno? Después puedes agregar más en la pestaña Aparatos.</Text>
             {err}
             <Button mode="contained" contentStyle={grande} labelStyle={{ fontSize: 18 }} onPress={() => ir('factura')}>

@@ -7,6 +7,7 @@ import { EstadoVacio } from '@/components/EstadoVacio';
 import { CierrePeriodo } from '@/components/CierrePeriodo';
 import { HojaReporte } from '@/components/HojaReporte';
 import { Pantalla } from '@/components/Pantalla';
+import { Nota } from '@/components/Nota';
 import { formatEnergy, formatMoney } from '@/lib/format';
 import { usePanelUso } from '@/lib/usePanelUso';
 import { useNoLeidos } from '@/lib/avisos';
@@ -90,6 +91,7 @@ export default function Mes() {
                   ? 'Tu periodo se extendió: registra tu factura para cerrarlo.'
                   : `Faltan ${hoy.dias_restantes} días del periodo.`}
               </Text>
+              <Nota>≈ calculado con tu tarifa; no es el total de tu factura.</Nota>
               <Racha dias={hoy.racha} />
             </>
           ) : (
@@ -97,6 +99,7 @@ export default function Mes() {
               <Text variant="labelLarge">Consumo calculado del mes</Text>
               <Cifra valor={formatEnergy(panel.kwh)} />
               <Text>{formatMoney(panel.costo)}</Text>
+              <Nota>≈ calculado con tu tarifa; no es el total de tu factura.</Nota>
               <Racha dias={panel.racha} />
               <EstadoVacio
                 icono="flag-checkered"

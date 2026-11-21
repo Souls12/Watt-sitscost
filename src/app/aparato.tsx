@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import { Button, Chip, Dialog, HelperText, Portal, Switch, Text, TextInput, useTheme } from 'react-native-paper';
+import { Nota } from '@/components/Nota';
 import { Formulario } from '@/components/Formulario';
 import { GuiaEtiqueta } from '@/components/GuiaEtiqueta';
 import { type Aparato, type Referencia, nombreReferencia, useColoresTipo } from '@/lib/aparatos';
@@ -104,9 +105,7 @@ export default function AparatoPantalla() {
         <Text variant="bodySmall">Lo propusiste al catálogo y está en revisión. Mientras tanto lo usas igual.</Text>
       )}
       {refEstado === 'aprobada' && (
-        <Text variant="bodySmall">
-          Copia de la ficha del catálogo. Puedes ajustar la potencia para que coincida con tu aparato.
-        </Text>
+        <Nota>Usamos la potencia típica de este tipo de aparato; puedes ajustarla.</Nota>
       )}
       <TextInput label="Nombre" mode="outlined" value={nombre} onChangeText={setNombre} />
       {propio && (
@@ -140,6 +139,7 @@ export default function AparatoPantalla() {
         </Text>
         <Switch value={usoConstante} onValueChange={setUsoConstante} />
       </View>
+      {usoConstante && <Nota>Lo registramos solo cada noche con las horas al día que indiques.</Nota>}
       <HelperText type="error" visible={!!error}>
         {error}
       </HelperText>

@@ -5,9 +5,10 @@ import { CampoFecha } from '@/components/CampoFecha';
 import { EstadoVacio } from '@/components/EstadoVacio';
 import { Formulario } from '@/components/Formulario';
 import { GuiaFactura } from '@/components/GuiaFactura';
+import { Nota } from '@/components/Nota';
 import { useSesion } from '@/lib/sesion';
 import { supabase } from '@/lib/supabase';
-import { formatEnergy, formatMoney } from '@/lib/format';
+import { formatEnergy, formatMoney, formatTarifa } from '@/lib/format';
 import { hoyIso } from '@/lib/fechas';
 import { leerNumero } from '@/lib/numero';
 import { META_AVISO, PORCENTAJES, calcularMeta, validarFactura } from '@/lib/factura';
@@ -140,7 +141,10 @@ export default function FacturaTab() {
           ))}
           <TextInput label="Otro porcentaje de reducción" value={pct} onChangeText={setPct} keyboardType="decimal-pad" />
           {meta && (
-            <Text variant="titleMedium">{`Meta: ${formatEnergy(meta.kwh)} · ${formatMoney(meta.pesos)}`}</Text>
+            <>
+              <Text variant="titleMedium">{`Meta: ${formatEnergy(meta.kwh)} · ${formatMoney(meta.pesos)}`}</Text>
+              <Nota>≈ calculado con tu tarifa; no es el total de tu factura.</Nota>
+            </>
           )}
           <Button mode="contained" onPress={definirMeta}>{periodo ? 'Cambiar mi meta' : 'Empezar mi periodo'}</Button>
         </>
@@ -152,7 +156,7 @@ export default function FacturaTab() {
         <Dialog visible={preguntaTarifa} onDismiss={() => setPreguntaTarifa(false)}>
           <Dialog.Title>¿El valor por kWh sigue igual?</Dialog.Title>
           <Dialog.Content>
-            <Text>{`Tu tarifa vigente es ${formatMoney(tarifa)} por kWh. Compárala con tu factura nueva.`}</Text>
+            <Text>{`Tu tarifa vigente es ${formatTarifa(tarifa)} por kWh. Compárala con tu factura nueva.`}</Text>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setPreguntaTarifa(false)}>Sigue igual</Button>
