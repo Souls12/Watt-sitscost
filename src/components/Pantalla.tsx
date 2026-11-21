@@ -1,17 +1,21 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
+import { type Href, router } from 'expo-router';
+import { IconButton, Text, useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { encabezado } from '@/theme';
 
 // Encabezado amarillo del almanaque, edge-to-edge, con una acción opcional a la derecha.
+// `atras`: muestra la flecha de volver; si no hay pantalla anterior (se abrió directo), va a ese destino.
 export function Pantalla({
   titulo,
   derecha,
+  atras,
   children,
 }: {
   titulo: string;
   derecha?: ReactNode;
+  atras?: Href;
   children?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
@@ -29,6 +33,16 @@ export function Pantalla({
           alignItems: 'center',
         }}
       >
+        {atras && (
+          <IconButton
+            icon="arrow-left"
+            iconColor={encabezado.texto}
+            size={28}
+            style={{ marginLeft: -8, marginRight: 4 }}
+            accessibilityLabel="Volver"
+            onPress={() => (router.canGoBack() ? router.back() : router.replace(atras))}
+          />
+        )}
         <Text variant="headlineMedium" style={{ color: encabezado.texto, flex: 1 }}>
           {titulo}
         </Text>

@@ -31,7 +31,7 @@ export default function Catalogo() {
   }, [todos, q]);
 
   return (
-    <Pantalla titulo="Catálogo">
+    <Pantalla titulo="Catálogo" atras="/aparatos">
       <View style={{ padding: 16, gap: 8 }}>
         <Searchbar placeholder="Tipo, marca o modelo" value={q} onChangeText={setQ} />
         <Button icon="pencil-plus" onPress={() => router.push('/aparato')}>

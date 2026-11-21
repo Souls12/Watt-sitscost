@@ -92,7 +92,7 @@ export default function Revision() {
       : [];
 
   return (
-    <Pantalla titulo="Revisar propuestas">
+    <Pantalla titulo="Revisar propuestas" atras="/cuenta">
       <FlatList
         data={administrador ? (propuestas ?? []) : []}
         keyExtractor={(p) => String(p.id)}

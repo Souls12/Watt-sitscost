@@ -23,7 +23,7 @@ const SECCIONES = [
 // Fuera de los guards de rutas: se abre tanto en el registro como desde Cuenta.
 export default function Tutorial() {
   return (
-    <Formulario titulo="Cómo funciona">
+    <Formulario titulo="Cómo funciona" atras="/">
       <Text variant="bodyLarge">Tres ideas para sacarle provecho a la app.</Text>
       <List.AccordionGroup>
         {SECCIONES.map((s) => (

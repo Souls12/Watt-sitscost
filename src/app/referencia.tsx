@@ -58,7 +58,7 @@ export default function Ficha() {
   }
 
   return (
-    <Formulario titulo={r ? nombreReferencia(r) : 'Ficha'}>
+    <Formulario titulo={r ? nombreReferencia(r) : 'Ficha'} atras="/catalogo">
       {r && (
         <>
           <List.Item title={formatPower(r.potencia_w)} description={criterioTexto[r.criterio_potencia]} left={(p) => <List.Icon {...p} icon="flash" />} />

@@ -94,7 +94,8 @@ export default function Registro() {
     );
 
   return (
-    <Formulario titulo={paso === 1 ? 'Tu cuenta' : paso === 2 ? 'Dónde vives' : 'Tu tarifa'}>
+    // En los pasos 2 y 3 se vuelve con su botón "Atrás", sin salir del registro ni perder lo escrito.
+    <Formulario atras={paso === 1 ? '/entrar' : undefined} titulo={paso === 1 ? 'Tu cuenta' : paso === 2 ? 'Dónde vives' : 'Tu tarifa'}>
       <Text variant="labelLarge">Paso {paso} de 3</Text>
       {paso === 1 ? (
         <>

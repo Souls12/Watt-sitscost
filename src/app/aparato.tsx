@@ -99,7 +99,7 @@ export default function AparatoPantalla() {
 
   const propio = !referencia && !id;
   return (
-    <Formulario titulo={id ? 'Editar aparato' : referencia ? 'Agregar mi copia' : 'Aparato propio'}>
+    <Formulario atras="/aparatos" titulo={id ? 'Editar aparato' : referencia ? 'Agregar mi copia' : 'Aparato propio'}>
       {propio && <GuiaEtiqueta />}
       {refEstado === 'propuesta' && (
         <Text variant="bodySmall">Lo propusiste al catálogo y está en revisión. Mientras tanto lo usas igual.</Text>

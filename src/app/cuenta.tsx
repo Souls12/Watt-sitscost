@@ -32,7 +32,7 @@ export default function Cuenta() {
   }, []);
 
   return (
-    <Formulario titulo="Mi cuenta">
+    <Formulario titulo="Mi cuenta" atras="/">
       <List.Item title={perfil?.nombre ?? ' '} description={session?.user.email} left={(p) => <List.Icon {...p} icon="account" />} />
       <List.Item
         title={`${perfil?.ciudad?.nombre ?? ''}${enRevision(perfil?.ciudad ?? null)}`}

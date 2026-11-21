@@ -35,7 +35,7 @@ export default function Avisos() {
   }
 
   return (
-    <Formulario titulo="Avisos">
+    <Formulario titulo="Avisos" atras="/">
       {error && <Text>{error}</Text>}
       {avisos?.length === 0 && <Text variant="bodyLarge">No tienes avisos por ahora. Aquí te contaremos cuando cambie una tarifa o se revise algo que propusiste.</Text>}
       {avisos?.map((a) => (

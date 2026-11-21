@@ -62,7 +62,7 @@ export default function Tarifa() {
   const enlazada = historial[0]?.tarifa_compartida_version_id;
 
   return (
-    <Formulario titulo="Mi tarifa">
+    <Formulario titulo="Mi tarifa" atras="/cuenta">
       <Text variant="bodyLarge">
         {historial[0]
           ? `Vigente: ${formatTarifa(historial[0].valor_kwh)} por kWh desde el ${historial[0].desde}.`

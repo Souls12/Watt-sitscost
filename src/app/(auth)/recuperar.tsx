@@ -23,7 +23,7 @@ export default function Recuperar() {
   }
 
   return (
-    <Formulario titulo="Recuperar contraseña">
+    <Formulario titulo="Recuperar contraseña" atras="/entrar">
       {enviado ? (
         <Text variant="bodyLarge">
           Si hay una cuenta con ese correo, te llegó un enlace. Ábrelo en este teléfono para elegir una
