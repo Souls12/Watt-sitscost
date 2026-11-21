@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { FlatList, View } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { entra } from '@/motion';
 import { Button, List, useTheme } from 'react-native-paper';
 import { EstadoVacio } from '@/components/EstadoVacio';
 import { Pantalla } from '@/components/Pantalla';
@@ -49,13 +51,15 @@ export default function Aparatos() {
             onAccion={() => router.push('/catalogo')}
           />
         }
-        renderItem={({ item: a }) => (
+        renderItem={({ item: a, index }) => (
+          <Animated.View entering={entra(index)}>
           <List.Item
             title={a.cantidad > 1 ? `${a.nombre} ×${a.cantidad}` : a.nombre}
             description={`${a.tipo} · ${formatPower(a.potencia_w)}${a.uso_constante ? ' · uso constante' : ''}`}
             left={() => <View style={{ width: 6, alignSelf: 'stretch', borderRadius: 3, backgroundColor: colores[a.tipo] ?? theme.colors.outline, marginLeft: 16 }} />}
             onPress={() => router.push({ pathname: '/aparato', params: { id: String(a.id) } })}
           />
+          </Animated.View>
         )}
       />
     </Pantalla>

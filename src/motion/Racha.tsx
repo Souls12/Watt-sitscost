@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withSpring,
 } from 'react-native-reanimated';
 import { useTheme } from 'react-native-paper';
@@ -15,7 +16,7 @@ export function Racha({ dias }: { dias: number }) {
   const y = useSharedValue(0);
   useEffect(() => {
     y.value = -14;
-    y.value = withSpring(0, resorte.racha);
+    y.value = withDelay(100, withSpring(0, resorte.racha)); // 100 ms después de la luna y la cifra
   }, [dias, y]);
   const punto = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
   return (

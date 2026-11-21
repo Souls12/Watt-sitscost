@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { entra } from '@/motion';
 import { Snackbar, Text, useTheme } from 'react-native-paper';
 import { router, useFocusEffect } from 'expo-router';
 import { CartesianChart, Line } from 'victory-native';
@@ -47,12 +49,13 @@ export default function Semanas() {
           />
         ) : (
           <>
-            {semanas.map((s) => {
+            {semanas.map((s, i) => {
               const sobre = s.kwh > s.presupuesto;
               const ancho = Math.min(1, s.presupuesto > 0 ? s.kwh / s.presupuesto : s.kwh > 0 ? 1 : 0);
               return (
-                <View
+                <Animated.View
                   key={s.semana}
+                  entering={entra(i)}
                   style={{ gap: 4 }}
                   accessible
                   accessibilityLabel={`Semana ${rangoSemana(s.desde, s.hasta)}${s.parcial ? ', parcial' : ''}: ${formatEnergy(s.kwh)} de ${formatEnergy(s.presupuesto)}${sobre ? ', por encima del presupuesto' : ''}`}
@@ -71,7 +74,7 @@ export default function Semanas() {
                     <View style={{ width: `${ancho * 100}%`, height: 10, backgroundColor: sobre ? theme.colors.tertiary : theme.colors.secondary }} />
                   </View>
                   {sobre && <Text variant="labelMedium">Por encima del presupuesto de la semana</Text>}
-                </View>
+                </Animated.View>
               );
             })}
 

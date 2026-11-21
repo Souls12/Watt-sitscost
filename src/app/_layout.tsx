@@ -8,7 +8,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { PaperProvider } from 'react-native-paper';
+import { PaperProvider, useTheme } from 'react-native-paper';
 import { ReduceMotion, ReducedMotionConfig } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { darkTheme, lightTheme } from '@/theme';
@@ -54,28 +54,30 @@ function Tematizado() {
 function Rutas() {
   const { session, cargando, recuperando } = useSesion();
   const { bienvenida } = useBienvenida();
+  const { colors } = useTheme();
   if (cargando || (session && bienvenida === null)) return null;
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    // Transiciones Material deliberadas: las pantallas empujadas entran desde la derecha; el cambio de sesión es un fundido.
+    <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: colors.background } }}>
       <Stack.Protected guard={!!session && !recuperando && bienvenida === false}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="cuenta" />
+        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+        <Stack.Screen name="cuenta" options={{ animation: 'fade_from_bottom' }} />
         <Stack.Screen name="tarifa" />
         <Stack.Screen name="catalogo" />
         <Stack.Screen name="referencia" />
         <Stack.Screen name="aparato" />
-        <Stack.Screen name="avisos" />
+        <Stack.Screen name="avisos" options={{ animation: 'fade_from_bottom' }} />
         <Stack.Screen name="revision" />
       </Stack.Protected>
       <Stack.Protected guard={!!session && !recuperando && bienvenida === true}>
-        <Stack.Screen name="bienvenida" />
+        <Stack.Screen name="bienvenida" options={{ animation: 'fade' }} />
       </Stack.Protected>
       <Stack.Screen name="tutorial" />
       <Stack.Protected guard={!!session && recuperando}>
-        <Stack.Screen name="nueva-contrasena" />
+        <Stack.Screen name="nueva-contrasena" options={{ animation: 'fade' }} />
       </Stack.Protected>
       <Stack.Protected guard={!session}>
-        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
       </Stack.Protected>
     </Stack>
   );
