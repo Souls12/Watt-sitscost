@@ -51,7 +51,7 @@ function Tematizado() {
 }
 
 // Sin sesión solo se ve la entrada; con el enlace de recuperación, solo la nueva contraseña.
-function Rutas() {
+export function Rutas() {
   const { session, cargando, recuperando } = useSesion();
   const { bienvenida } = useBienvenida();
   const { colors } = useTheme();
