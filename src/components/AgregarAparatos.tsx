@@ -23,6 +23,7 @@ export function AgregarAparatos({ onCambio, permitirPropio = true }: { onCambio?
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [q, setQ] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [agregado, setAgregado] = useState<string | null>(null);
 
   const cargarPropios = useCallback(async () => {
     const { data } = await supabase.from('aparatos').select('id, tipo').is('archivado_en', null);
@@ -55,6 +56,7 @@ export function AgregarAparatos({ onCambio, permitirPropio = true }: { onCambio?
     const uso = usoTipico(usoTipo);
     setOcupado(clave);
     setError(null);
+    setAgregado(null);
     const { error: e } = await supabase.from('aparatos').insert({
       nombre,
       tipo: f.tipo,
@@ -65,7 +67,12 @@ export function AgregarAparatos({ onCambio, permitirPropio = true }: { onCambio?
       referencia_id: f.id,
     });
     if (e) setError('No pudimos agregarlo. Intenta de nuevo.');
-    else await cargarPropios();
+    else {
+      // Cierra la búsqueda y confirma: sin esto parecía que el toque no hizo nada y se duplicaba.
+      setQ('');
+      setAgregado(`Agregamos ${nombre}.`);
+      await cargarPropios();
+    }
     setOcupado(null);
   }
 
@@ -89,7 +96,20 @@ export function AgregarAparatos({ onCambio, permitirPropio = true }: { onCambio?
   return (
     <View style={{ gap: 12 }}>
       <GridComunes fichas={fichas} agregados={agregados} ocupado={ocupado} onAlternar={alternar} />
-      <Searchbar placeholder="Buscar por tipo, marca o modelo" value={q} onChangeText={setQ} accessibilityLabel="Buscar aparato en el catálogo" />
+      <Searchbar
+        placeholder="Buscar por tipo, marca o modelo"
+        value={q}
+        onChangeText={(t) => {
+          setQ(t);
+          setAgregado(null);
+        }}
+        accessibilityLabel="Buscar aparato en el catálogo"
+      />
+      {agregado && (
+        <Text variant="bodyMedium" accessibilityLiveRegion="polite">
+          {`✓ ${agregado}`}
+        </Text>
+      )}
       {q.trim() !== '' && (
         <FlatList
           data={resultados.slice(0, MAX_RESULTADOS)}

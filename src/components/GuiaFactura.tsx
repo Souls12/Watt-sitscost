@@ -94,7 +94,7 @@ function GuiaAfinia({ foco }: { foco: Foco }) {
           <View style={{ flexDirection: 'row', gap: 3, alignItems: 'center' }}>
             {['Energía', '+ Aseo', '+ Alumbrado', '+ Seguridad', '= Total mes'].map((t) => (
               <View key={t} style={{ flex: 1, aspectRatio: 1, borderRadius: 99, borderWidth: 1, borderColor: theme.colors.outline, alignItems: 'center', justifyContent: 'center' }}>
-                <Text variant="labelSmall" style={{ color: gris, fontSize: 8, lineHeight: 10, textAlign: 'center' }} numberOfLines={2}>{t}</Text>
+                <Text variant="labelSmall" style={{ color: gris, fontSize: 10, lineHeight: 12, textAlign: 'center' }} numberOfLines={2}>{t}</Text>
               </View>
             ))}
           </View>
@@ -251,7 +251,7 @@ function GuiaGenerica({ foco }: { foco: Foco }) {
       )}
       <Text variant="bodySmall">
         {tarifa
-          ? 'Busca “Valor kWh” o “Costo unitario”, en $/kWh: unos cientos de pesos. Si aparece un subsidio por kWh, réstalo. No uses el total a pagar.'
+          ? 'Busca “Valor kWh” o “Costo unitario”, en $/kWh: suele estar entre 500 y 1.200 pesos. Si aparece un subsidio por kWh, réstalo. No uses el total a pagar.'
           : 'Busca los kWh del mes y las fechas “desde” y “hasta” del consumo. No uses la fecha de pago ni el total en pesos.'}
       </Text>
     </View>

@@ -128,7 +128,7 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
               >
                 <Text variant="titleSmall">¿Dónde la encuentro?</Text>
                 <Text variant="bodyMedium">
-                  En tu factura de energía busca “Valor kWh”, “Costo unitario” o “Tarifa”. Es lo que pagas por cada kWh y casi siempre es un número de unos cientos de pesos. No es el total a pagar.
+                  En tu factura de energía busca “Valor kWh”, “Costo unitario” o “Tarifa”. Es lo que pagas por cada kWh y suele estar entre 500 y 1.200 pesos. No es el total a pagar.
                 </Text>
                 <Text variant="bodyMedium">
                   Si no la encuentras, deja el valor que ves: es aproximado y lo puedes cambiar después en Mi cuenta, en Mi tarifa.
