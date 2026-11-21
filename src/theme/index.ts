@@ -59,6 +59,20 @@ export const lightTheme: MD3Theme = {
     surfaceVariant: '#F4EFE4',
     onSurfaceVariant: '#4C463C',
     outline: '#CFC8B8',
+    outlineVariant: '#E4DDCB',
+    surfaceDisabled: 'rgba(29, 26, 22, 0.12)',
+    onSurfaceDisabled: 'rgba(29, 26, 22, 0.38)',
+    inverseSurface: '#322F29',
+    inverseOnSurface: '#F6F0E4',
+    inversePrimary: '#FF8A7F',
+    elevation: {
+      level0: 'transparent',
+      level1: '#FBF7EE',
+      level2: '#F8F3E7',
+      level3: '#F4EEDF',
+      level4: '#F2EBDA',
+      level5: '#EFE8D5',
+    },
   },
 };
 
@@ -67,8 +81,9 @@ export const darkTheme: MD3Theme = {
   fonts: configureFonts({ config: fontConfig }),
   colors: {
     ...MD3DarkTheme.colors,
-    primary: '#FF8A7F',
-    onPrimary: '#5F0B08',
+    // Rojo de marca algo aclarado (no rosa): ~5,5:1 sobre el fondo y texto tinta encima (~5:1).
+    primary: '#F0615A',
+    onPrimary: '#1D1A16',
     primaryContainer: '#8E1B16',
     onPrimaryContainer: '#FFDAD5',
     secondary: '#7FCF92',
@@ -85,6 +100,21 @@ export const darkTheme: MD3Theme = {
     onSurface: '#EDE6D8',
     surfaceVariant: '#2A251D',
     onSurfaceVariant: '#CFC8B8',
-    outline: '#6E6759',
+    outline: '#8A8272',
+    outlineVariant: '#443E33',
+    surfaceDisabled: 'rgba(237, 230, 216, 0.12)',
+    onSurfaceDisabled: 'rgba(237, 230, 216, 0.38)',
+    inverseSurface: '#EDE6D8',
+    inverseOnSurface: '#322F29',
+    inversePrimary: almanaque.rojo,
+    // Superficies elevadas cálidas (el tema MD3 base las trae con tinte morado).
+    elevation: {
+      level0: 'transparent',
+      level1: '#1F1B15',
+      level2: '#241F18',
+      level3: '#29241C',
+      level4: '#2B261E',
+      level5: '#2F2920',
+    },
   },
 };

@@ -44,7 +44,7 @@ export const useBienvenida = () => {
 
 export function AjustesProvider({ children }: { children: ReactNode }) {
   const { session } = useSesion();
-  const [tema, setTemaEstado] = useState<Tema>('sistema');
+  const [tema, setTemaEstado] = useState<Tema>('claro');
   const [cifra, setCifraEstado] = useState<Cifra>('kwh');
   const [bienvenida, setBienvenida] = useState(false);
   const id = session?.user.id;
