@@ -1,8 +1,9 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Almanaque } from '@/components/Almanaque';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Badge, FAB, IconButton, Snackbar, Text } from 'react-native-paper';
+import { EstadoVacio } from '@/components/EstadoVacio';
 import { CierrePeriodo } from '@/components/CierrePeriodo';
 import { HojaReporte } from '@/components/HojaReporte';
 import { Pantalla } from '@/components/Pantalla';
@@ -18,6 +19,14 @@ export default function Mes() {
   const noLeidos = useNoLeidos();
   const [abierta, setAbierta] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Otras pantallas (Semanas vacía) mandan aquí con ?reportar=1 para abrir la hoja de reporte.
+  const { reportar: pedirReporte } = useLocalSearchParams<{ reportar?: string }>();
+  useEffect(() => {
+    if (pedirReporte === '1') {
+      setAbierta(true);
+      router.setParams({ reportar: undefined });
+    }
+  }, [pedirReporte]);
   useFocusEffect(
     useCallback(() => {
       cargar().then(setError);
@@ -88,8 +97,14 @@ export default function Mes() {
               <Text variant="labelLarge">Consumo calculado del mes</Text>
               <Cifra valor={formatEnergy(panel.kwh)} />
               <Text>{formatMoney(panel.costo)}</Text>
-              <Text>Define tu meta en la pestaña Factura para ver cuánto puedes gastar hoy.</Text>
               <Racha dias={panel.racha} />
+              <EstadoVacio
+                icono="flag-checkered"
+                titulo="Aún no tienes una meta"
+                texto="Con tu última factura fijas una meta de ahorro, y cada día te decimos cuánto puedes gastar."
+                accion="Definir mi meta"
+                onAccion={() => router.navigate('/factura')}
+              />
             </>
           )}
           <Almanaque dias={dias} />

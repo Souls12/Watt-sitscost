@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Snackbar, Text, useTheme } from 'react-native-paper';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { CartesianChart, Line } from 'victory-native';
+import { EstadoVacio } from '@/components/EstadoVacio';
 import { Pantalla } from '@/components/Pantalla';
 import { useColoresTipo } from '@/lib/aparatos';
 import { formatEnergy } from '@/lib/format';
@@ -37,7 +38,13 @@ export default function Semanas() {
     <Pantalla titulo="Semanas">
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
         {!hayRegistros ? (
-          <Text variant="bodyLarge">Aún no hay registros en este periodo. Reporta el uso de un aparato y aquí verás cada semana.</Text>
+          <EstadoVacio
+            icono="calendar-week"
+            titulo="Aún no hay registros"
+            texto="Cuando reportes el uso de un aparato, aquí verás cómo va cada semana frente a tu presupuesto."
+            accion="Reportar uso"
+            onAccion={() => router.navigate({ pathname: '/', params: { reportar: '1' } })}
+          />
         ) : (
           <>
             {semanas.map((s) => {

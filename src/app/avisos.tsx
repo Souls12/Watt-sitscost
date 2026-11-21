@@ -37,7 +37,7 @@ export default function Avisos() {
   return (
     <Formulario titulo="Avisos">
       {error && <Text>{error}</Text>}
-      {avisos?.length === 0 && <Text>No tienes avisos por ahora.</Text>}
+      {avisos?.length === 0 && <Text variant="bodyLarge">No tienes avisos por ahora. Aquí te contaremos cuando cambie una tarifa o se revise algo que propusiste.</Text>}
       {avisos?.map((a) => (
         <Card
           key={a.id}

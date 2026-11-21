@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FlatList, View } from 'react-native';
+import { router } from 'expo-router';
 import { Button, IconButton, List, Modal, Portal, Text, useTheme } from 'react-native-paper';
 import { type Aparato, useColoresTipo } from '@/lib/aparatos';
 import { aIso } from '@/lib/fechas';
@@ -64,7 +65,14 @@ export function HojaReporte({
             keyExtractor={(a) => String(a.id)}
             style={{ flexGrow: 0 }}
             ListHeaderComponent={<Text variant="titleLarge">¿Qué usaste?</Text>}
-            ListEmptyComponent={<Text style={{ paddingVertical: 16 }}>Primero agrega un aparato en la pestaña Aparatos.</Text>}
+            ListEmptyComponent={
+              <View style={{ paddingVertical: 16, gap: 12 }}>
+                <Text variant="bodyLarge">Para reportar uso primero agrega un aparato.</Text>
+                <Button mode="contained" icon="plus" onPress={() => { onCerrar(); router.push('/catalogo'); }}>
+                  Agregar un aparato
+                </Button>
+              </View>
+            }
             renderItem={({ item: a }) => (
               <List.Item
                 title={a.cantidad > 1 ? `${a.nombre} ×${a.cantidad}` : a.nombre}

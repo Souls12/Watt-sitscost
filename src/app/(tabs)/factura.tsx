@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Dialog, List, Portal, Text, TextInput } from 'react-native-paper';
 import { CampoFecha } from '@/components/CampoFecha';
+import { EstadoVacio } from '@/components/EstadoVacio';
 import { Formulario } from '@/components/Formulario';
 import { GuiaFactura } from '@/components/GuiaFactura';
 import { useSesion } from '@/lib/sesion';
@@ -26,6 +27,7 @@ export default function FacturaTab() {
   const [fin, setFin] = useState('');
   const [pct, setPct] = useState('10');
   const [error, setError] = useState<string | null>(null);
+  const campoKwh = useRef<any>(null) // el tipo de ref de Paper pide dos instancias a la vez;
   const [confirmar, setConfirmar] = useState(false);
   const [preguntaTarifa, setPreguntaTarifa] = useState(false);
   const [porEliminar, setPorEliminar] = useState<number | null>(null);
@@ -93,8 +95,17 @@ export default function FacturaTab() {
 
   return (
     <Formulario titulo="Factura">
+      {facturas.length === 0 && (
+        <EstadoVacio
+          icono="receipt-text"
+          titulo="Aún no registras tu factura"
+          texto="Con los kWh de tu última factura calculamos tu meta de ahorro y tu presupuesto de cada día."
+          accion="Registrar mi factura"
+          onAccion={() => campoKwh.current?.focus()}
+        />
+      )}
       <GuiaFactura />
-      <TextInput label="Consumo facturado (kWh)" value={kwh} onChangeText={setKwh} keyboardType="decimal-pad" />
+      <TextInput ref={campoKwh} label="Consumo facturado (kWh)" value={kwh} onChangeText={setKwh} keyboardType="decimal-pad" />
       <CampoFecha label="Inicio del consumo" value={inicio} onChange={setInicio} maxima={hoyIso()} />
       <CampoFecha label="Fin del consumo" value={fin} onChange={setFin} maxima={hoyIso()} />
       {error && <Text variant="bodySmall">{error}</Text>}

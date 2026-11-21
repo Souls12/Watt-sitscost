@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { FlatList, View } from 'react-native';
-import { Button, List, Text, useTheme } from 'react-native-paper';
+import { Button, List, useTheme } from 'react-native-paper';
+import { EstadoVacio } from '@/components/EstadoVacio';
 import { Pantalla } from '@/components/Pantalla';
 import { type Aparato, useColoresTipo } from '@/lib/aparatos';
 import { formatPower } from '@/lib/format';
@@ -31,14 +32,22 @@ export default function Aparatos() {
         keyExtractor={(a) => String(a.id)}
         contentContainerStyle={{ paddingBottom: 16 }}
         ListHeaderComponent={
-          <View style={{ padding: 16 }}>
-            <Button mode="contained" icon="plus" onPress={() => router.push('/catalogo')}>
-              Agregar aparato
-            </Button>
-          </View>
+          lista.length ? (
+            <View style={{ padding: 16 }}>
+              <Button mode="contained" icon="plus" onPress={() => router.push('/catalogo')}>
+                Agregar aparato
+              </Button>
+            </View>
+          ) : undefined
         }
         ListEmptyComponent={
-          <Text style={{ padding: 16 }}>Aún no tienes aparatos. Búscalos en el catálogo o registra uno propio.</Text>
+          <EstadoVacio
+            icono="power-plug"
+            titulo="Aún no tienes aparatos"
+            texto="Aquí listas lo que usas en casa para calcular cuánto gasta cada cosa. Búscalos en el catálogo o registra uno propio."
+            accion="Agregar de la lista común"
+            onAccion={() => router.push('/catalogo')}
+          />
         }
         renderItem={({ item: a }) => (
           <List.Item
