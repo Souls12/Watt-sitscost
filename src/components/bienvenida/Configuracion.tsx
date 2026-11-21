@@ -167,7 +167,9 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
         {paso === 'tarifa' && (
           <>
             <Text variant="titleLarge">¿Cuánto pagas por cada kWh?</Text>
-            <Text variant="bodyLarge">Con este valor calculamos cuánto cuesta lo que gastas. Ya pusimos el que nos diste al registrarte.</Text>
+            <Text variant="bodyLarge">
+              {`Con este valor calculamos cuánto cuesta lo que gastas.${tarifaActual ? ' Ya pusimos el que nos diste al registrarte.' : ''}`}
+            </Text>
             {campo}
             <Button icon="help-circle-outline" onPress={() => setExplicar((v) => !v)} contentStyle={{ minHeight: 48 }}>
               No sé mi tarifa

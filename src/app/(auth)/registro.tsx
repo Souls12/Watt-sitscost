@@ -125,7 +125,7 @@ export default function Registro() {
           <Button icon="help-circle-outline" onPress={() => router.push('/tutorial')}>
             ¿Cómo funciona?
           </Button>
-          <Button onPress={() => router.back()}>Ya tengo cuenta</Button>
+          <Button onPress={() => router.replace('/entrar')}>Ya tengo cuenta</Button>
         </>
       ) : paso === 2 ? (
         <>

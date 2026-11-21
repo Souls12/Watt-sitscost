@@ -49,7 +49,7 @@ export default function Recuperar() {
           </Button>
         </>
       )}
-      <Button onPress={() => router.back()}>Volver</Button>
+      <Button onPress={() => router.replace('/entrar')}>Volver</Button>
     </Formulario>
   );
 }

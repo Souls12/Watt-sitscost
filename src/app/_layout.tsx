@@ -56,10 +56,13 @@ function Rutas() {
   const { bienvenida } = useBienvenida();
   const { colors } = useTheme();
   if (cargando || (session && bienvenida === null)) return null;
+  // Destino explícito al chocar con una pantalla bloqueada: sin él, Expo Router elige la primera ruta libre
+  // en su propio orden (caía en /tutorial, sin salida).
+  const destino = !session ? '/entrar' : recuperando ? '/nueva-contrasena' : bienvenida ? '/bienvenida' : '/';
   return (
     // Transiciones Material deliberadas: las pantallas empujadas entran desde la derecha; el cambio de sesión es un fundido.
     <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: colors.background } }}>
-      <Stack.Protected guard={!!session && !recuperando && bienvenida === false}>
+      <Stack.Protected guard={!!session && !recuperando && bienvenida === false} redirectTo={destino}>
         <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
         <Stack.Screen name="cuenta" options={{ animation: 'fade_from_bottom' }} />
         <Stack.Screen name="tarifa" />
@@ -69,16 +72,15 @@ function Rutas() {
         <Stack.Screen name="avisos" options={{ animation: 'fade_from_bottom' }} />
         <Stack.Screen name="revision" />
       </Stack.Protected>
-      <Stack.Protected guard={!!session && !recuperando && bienvenida === true}>
+      <Stack.Protected guard={!!session && !recuperando && bienvenida === true} redirectTo={destino}>
         <Stack.Screen name="bienvenida" options={{ animation: 'fade' }} />
       </Stack.Protected>
-      <Stack.Protected guard={!!session && recuperando}>
+      <Stack.Protected guard={!!session && recuperando} redirectTo={destino}>
         <Stack.Screen name="nueva-contrasena" options={{ animation: 'fade' }} />
       </Stack.Protected>
-      <Stack.Protected guard={!session}>
+      <Stack.Protected guard={!session} redirectTo={destino}>
         <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
       </Stack.Protected>
-      {/* Al final: si "/" está bloqueada, Expo Router abre la primera pantalla disponible, y no debe ser esta. */}
       <Stack.Screen name="tutorial" />
     </Stack>
   );
