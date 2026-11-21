@@ -27,10 +27,12 @@ export function AgregarAparatos({ onCambio, permitirPropio = true }: { onCambio?
 
   const cargarPropios = useCallback(async () => {
     const { data } = await supabase.from('aparatos').select('id, tipo').is('archivado_en', null);
-    const l = (data ?? []) as Propio[];
-    setPropios(l);
-    onCambio?.(l.length);
-  }, [onCambio]);
+    setPropios((data ?? []) as Propio[]);
+  }, []);
+  // Avisa la cantidad con cada cambio, también los optimistas (ids negativos = aún guardando).
+  useEffect(() => {
+    onCambio?.(propios.length);
+  }, [propios, onCambio]);
 
   useEffect(() => {
     supabase
@@ -52,39 +54,48 @@ export function AgregarAparatos({ onCambio, permitirPropio = true }: { onCambio?
   const agregados: Record<string, number> = {};
   for (const a of propios) if (TIPOS_COMUNES.some((t) => t.tipo === a.tipo)) agregados[a.tipo] ??= a.id;
 
+  // Optimista: se marca al instante y se guarda detrás; si el servidor falla, se deshace con un aviso.
   async function insertar(clave: string, f: Ficha, nombre: string, usoTipo: string) {
     const uso = usoTipico(usoTipo);
+    const temporal = -Date.now();
     setOcupado(clave);
     setError(null);
-    setAgregado(null);
-    const { error: e } = await supabase.from('aparatos').insert({
-      nombre,
-      tipo: f.tipo,
-      potencia_w: f.potencia_w,
-      cantidad: 1,
-      uso_tipico_horas: uso.horas,
-      uso_constante: uso.constante,
-      referencia_id: f.id,
-    });
-    if (e) setError('No pudimos agregarlo. Intenta de nuevo.');
-    else {
-      // Cierra la búsqueda y confirma: sin esto parecía que el toque no hizo nada y se duplicaba.
-      setQ('');
-      setAgregado(`Agregamos ${nombre}.`);
-      await cargarPropios();
-    }
+    setPropios((p) => [...p, { id: temporal, tipo: f.tipo }]);
+    // Cierra la búsqueda y confirma: sin esto parecía que el toque no hizo nada y se duplicaba.
+    setQ('');
+    setAgregado(`Agregamos ${nombre}.`);
+    const { data, error: e } = await supabase
+      .from('aparatos')
+      .insert({
+        nombre,
+        tipo: f.tipo,
+        potencia_w: f.potencia_w,
+        cantidad: 1,
+        uso_tipico_horas: uso.horas,
+        uso_constante: uso.constante,
+        referencia_id: f.id,
+      })
+      .select('id')
+      .single();
+    if (e || !data) {
+      setPropios((p) => p.filter((a) => a.id !== temporal));
+      setAgregado(null);
+      setError(`No pudimos agregar ${nombre}. Revisa tu conexión e intenta de nuevo.`);
+    } else setPropios((p) => p.map((a) => (a.id === temporal ? { id: data.id, tipo: f.tipo } : a)));
     setOcupado(null);
   }
 
   async function alternar(t: (typeof TIPOS_COMUNES)[number]) {
     const id = agregados[t.tipo];
+    if (id < 0) return; // aún se está guardando
     if (id) {
-      setOcupado(t.tipo);
       setError(null);
+      setPropios((p) => p.filter((a) => a.id !== id));
       const { error: e } = await supabase.from('aparatos').update({ archivado_en: new Date().toISOString() }).eq('id', id);
-      if (e) setError('No pudimos quitarlo. Intenta de nuevo.');
-      else await cargarPropios();
-      setOcupado(null);
+      if (e) {
+        setPropios((p) => [...p, { id, tipo: t.tipo }]);
+        setError(`No pudimos quitar ${t.nombre}. Revisa tu conexión e intenta de nuevo.`);
+      }
       return;
     }
     const ref = referenciaTipica(fichas, t.tipo);
@@ -95,7 +106,8 @@ export function AgregarAparatos({ onCambio, permitirPropio = true }: { onCambio?
   const resultados = buscarFichas(fichas, q);
   return (
     <View style={{ gap: 12 }}>
-      <GridComunes fichas={fichas} agregados={agregados} ocupado={ocupado} onAlternar={alternar} />
+      {/* Sin bloqueo global: cada tarjeta responde al instante y se protege sola mientras guarda. */}
+      <GridComunes fichas={fichas} agregados={agregados} ocupado={null} onAlternar={alternar} />
       <Searchbar
         placeholder="Buscar por tipo, marca o modelo"
         value={q}

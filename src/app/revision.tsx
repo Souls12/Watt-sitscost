@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { FlatList, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Card, Dialog, HelperText, List, Portal, Text, TextInput } from 'react-native-paper';
 import { Pantalla } from '@/components/Pantalla';
 import { formatPower } from '@/lib/format';
@@ -37,6 +38,7 @@ function describir(p: Propuesta) {
 
 // Revisión del administrador. La base de datos verifica el rol: otro usuario no ve propuestas ajenas ni puede resolverlas.
 export default function Revision() {
+  const insets = useSafeAreaInsets();
   const [propuestas, setPropuestas] = useState<Propuesta[] | null>(null);
   const [lugares, setLugares] = useState<{ ciudad: Lugar[]; empresa: Lugar[] }>({ ciudad: [], empresa: [] });
   const [abierta, setAbierta] = useState<{ p: Propuesta; decision: Decision } | null>(null);
@@ -96,7 +98,7 @@ export default function Revision() {
       <FlatList
         data={administrador ? (propuestas ?? []) : []}
         keyExtractor={(p) => String(p.id)}
-        contentContainerStyle={{ padding: 16, gap: 12 }}
+        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: insets.bottom + 32 }}
         ListHeaderComponent={!administrador ? <Text>Solo el administrador puede revisar propuestas.</Text> : undefined}
         ListEmptyComponent={administrador && propuestas?.length === 0 ? <Text>No hay propuestas por revisar.</Text> : undefined}
         ListFooterComponent={<Button onPress={() => router.back()}>Volver</Button>}

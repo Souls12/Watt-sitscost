@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import { FlatList, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, List, Searchbar } from 'react-native-paper';
 import { Pantalla } from '@/components/Pantalla';
 import { IconoTipo } from '@/components/IconoTipo';
@@ -12,6 +13,7 @@ const sinTildes = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLo
 
 // Catálogo de referencia: 94 fichas, se filtran en el teléfono por tipo, marca o modelo.
 export default function Catalogo() {
+  const insets = useSafeAreaInsets();
   const [todos, setTodos] = useState<Referencia[]>([]);
   const [q, setQ] = useState('');
 
@@ -39,6 +41,7 @@ export default function Catalogo() {
         </Button>
       </View>
       <FlatList
+        contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
         data={visibles}
         keyExtractor={(r) => String(r.id)}
         keyboardShouldPersistTaps="handled"
