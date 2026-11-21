@@ -1,21 +1,20 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { Button, HelperText, Icon, ProgressBar, Text, TextInput, useTheme } from 'react-native-paper';
+import { Button, HelperText, ProgressBar, Text, TextInput, useTheme } from 'react-native-paper';
+import { AgregarAparatos } from '@/components/AgregarAparatos';
 import { CampoFecha } from '@/components/CampoFecha';
 import { useTarifa } from '@/components/CampoTarifa';
 import { Formulario } from '@/components/Formulario';
 import { GuiaFactura } from '@/components/GuiaFactura';
 import { Nota } from '@/components/Nota';
-import { type Referencia } from '@/lib/aparatos';
-import { TIPOS_COMUNES, referenciaTipica } from '@/lib/bienvenida';
 import { PORCENTAJES, calcularMeta, validarFactura } from '@/lib/factura';
 import { hoyIso } from '@/lib/fechas';
-import { formatDuration, formatEnergy, formatMoney, formatPower, formatTarifa } from '@/lib/format';
+import { formatEnergy, formatMoney, formatTarifa } from '@/lib/format';
 import { useSesion } from '@/lib/sesion';
 import { supabase } from '@/lib/supabase';
 import { leerTarifa } from '@/lib/tarifa';
-import { Luna, Presionable, entra, paginaEntra, paginaSale } from '@/motion';
+import { Luna, entra, paginaEntra, paginaSale } from '@/motion';
 
 type Paso = 'tarifa' | 'aparatos' | 'factura' | 'meta' | 'listo';
 const PASOS: Paso[] = ['tarifa', 'aparatos', 'factura', 'meta'];
@@ -26,8 +25,6 @@ const TITULOS: Record<Paso, string> = {
   meta: 'Tu meta',
   listo: 'Todo listo',
 };
-
-type Ficha = Pick<Referencia, 'id' | 'tipo' | 'potencia_w'>;
 
 // Configuración guiada: una pregunta por pantalla. Tarifa y aparatos dan datos al Mes; factura y meta son opcionales.
 export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
@@ -44,10 +41,7 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
   const { texto, setTexto, campo, validar } = useTarifa(false);
   const [tarifaActual, setTarifaActual] = useState<number | null>(null);
   const [explicar, setExplicar] = useState(false);
-  // Aparatos
-  const [fichas, setFichas] = useState<Ficha[]>([]);
-  const [agregados, setAgregados] = useState<Record<string, number>>({});
-  const [ocupado, setOcupado] = useState<string | null>(null);
+  const [n, setN] = useState(0);
   // Factura y meta
   const [kwh, setKwh] = useState('');
   const [inicio, setInicio] = useState('');
@@ -67,20 +61,6 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
         setTexto(String(v).replace('.', ','));
       }
     });
-    supabase
-      .from('aparatos_referencia')
-      .select('id, tipo, potencia_w')
-      .eq('estado', 'aprobada')
-      .then(({ data }) => setFichas(((data ?? []) as Ficha[]).map((f) => ({ ...f, potencia_w: Number(f.potencia_w) }))));
-    supabase
-      .from('aparatos')
-      .select('id, tipo')
-      .is('archivado_en', null)
-      .then(({ data }) => {
-        const m: Record<string, number> = {};
-        for (const a of data ?? []) if (TIPOS_COMUNES.some((t) => t.tipo === a.tipo)) m[a.tipo] = a.id;
-        setAgregados(m);
-      });
   }, [session, setTexto]);
 
   const tarifaNueva = leerTarifa(texto);
@@ -92,38 +72,6 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
     }
     setError(null);
     ir('aparatos');
-  }
-
-  async function alternar(t: (typeof TIPOS_COMUNES)[number]) {
-    const id = agregados[t.tipo];
-    setOcupado(t.tipo);
-    setError(null);
-    if (id) {
-      const { error: e } = await supabase.from('aparatos').update({ archivado_en: new Date().toISOString() }).eq('id', id);
-      if (e) setError('No pudimos quitarlo. Intenta de nuevo.');
-      else setAgregados(({ [t.tipo]: _, ...resto }) => resto);
-    } else {
-      const ref = referenciaTipica(fichas, t.tipo);
-      if (!ref) setError('No pudimos cargar la lista de aparatos. Revisa tu conexión.');
-      else {
-        const { data, error: e } = await supabase
-          .from('aparatos')
-          .insert({
-            nombre: t.nombre,
-            tipo: t.tipo,
-            potencia_w: ref.potencia_w,
-            cantidad: 1,
-            uso_tipico_horas: t.horas,
-            uso_constante: !!t.constante,
-            referencia_id: ref.id,
-          })
-          .select('id')
-          .single();
-        if (e || !data) setError('No pudimos agregarlo. Intenta de nuevo.');
-        else setAgregados((a) => ({ ...a, [t.tipo]: data.id }));
-      }
-    }
-    setOcupado(null);
   }
 
   async function guardarFactura() {
@@ -145,7 +93,6 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
     ir('listo');
   }
 
-  const n = Object.keys(agregados).length;
   const meta = factura && tarifaActual ? calcularMeta(factura.kwh, pct, tarifaActual) : null;
   const progreso = paso === 'listo' ? 1 : (PASOS.indexOf(paso) + 1) / PASOS.length;
   const grande = { height: 56 } as const;
@@ -199,50 +146,9 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
         {paso === 'aparatos' && (
           <>
             <Text variant="titleLarge">¿Qué aparatos tienes en casa?</Text>
-            <Text variant="bodyLarge">Toca los que usas. Los agregamos con valores típicos; luego los ajustas a los tuyos.</Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-              {TIPOS_COMUNES.map((t, i) => {
-                const puesto = !!agregados[t.tipo];
-                const ficha = referenciaTipica(fichas, t.tipo);
-                return (
-                  <Animated.View key={t.tipo} entering={entra(i)} style={{ flexBasis: '47%', flexGrow: 1 }}>
-                    <Presionable
-                      accessibilityRole="checkbox"
-                      accessibilityState={{ checked: puesto, disabled: ocupado === t.tipo }}
-                      accessibilityLabel={`${t.nombre}${ficha ? `, ${formatPower(ficha.potencia_w)}` : ''}`}
-                      disabled={ocupado !== null}
-                      onPress={() => alternar(t)}
-                      style={{
-                        minHeight: 120,
-                        borderRadius: 16,
-                        borderWidth: 2,
-                        borderColor: puesto ? theme.colors.primary : theme.colors.outline,
-                        backgroundColor: puesto ? theme.colors.primaryContainer : theme.colors.surface,
-                        padding: 12,
-                        gap: 4,
-                      }}
-                    >
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Icon source={t.icono} size={32} color={puesto ? theme.colors.onPrimaryContainer : theme.colors.onSurface} />
-                        {puesto && <Icon source="check-circle" size={24} color={theme.colors.onPrimaryContainer} />}
-                      </View>
-                      <Text variant="titleSmall" style={{ color: puesto ? theme.colors.onPrimaryContainer : theme.colors.onSurface }}>
-                        {t.nombre}
-                      </Text>
-                      {ficha && (
-                        <Text variant="bodySmall" style={{ color: puesto ? theme.colors.onPrimaryContainer : theme.colors.onSurfaceVariant }}>
-                          {`${formatPower(ficha.potencia_w)} · ${formatDuration(t.horas * 60)} al día`}
-                        </Text>
-                      )}
-                    </Presionable>
-                  </Animated.View>
-                );
-              })}
-            </View>
-            <Nota>La nevera no trabaja todo el día: su motor se prende y apaga. Contamos unas 8 h al día.</Nota>
-            <Nota>Usamos la potencia típica de cada tipo de aparato; puedes ajustarla en Aparatos.</Nota>
+            <Text variant="bodyLarge">Toca los que usas o búscalos por marca o modelo. Los agregamos con valores típicos; luego los ajustas a los tuyos.</Text>
+            <AgregarAparatos onCambio={setN} permitirPropio={false} />
             <Nota>La nevera se registra sola cada noche, así no tienes que reportarla.</Nota>
-            <Text variant="bodyMedium">¿Falta alguno? Después puedes agregar más en la pestaña Aparatos.</Text>
             {err}
             <Button mode="contained" contentStyle={grande} labelStyle={{ fontSize: 18 }} onPress={() => ir('factura')}>
               {n ? `Seguir (${n} ${n === 1 ? 'aparato' : 'aparatos'})` : 'Lo haré después'}

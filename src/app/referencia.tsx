@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import { Button, Chip, Dialog, HelperText, List, Portal, Text, TextInput } from 'react-native-paper';
+import { IconoTipo } from '@/components/IconoTipo';
 import { Formulario } from '@/components/Formulario';
 import { type Referencia, criterioTexto, nombreReferencia } from '@/lib/aparatos';
 import { formatPower } from '@/lib/format';
@@ -61,7 +62,7 @@ export default function Ficha() {
       {r && (
         <>
           <List.Item title={formatPower(r.potencia_w)} description={criterioTexto[r.criterio_potencia]} left={(p) => <List.Icon {...p} icon="flash" />} />
-          <List.Item title={r.tipo} description="Tipo" left={(p) => <List.Icon {...p} icon="shape" />} />
+          <List.Item title={r.tipo} description="Tipo" left={() => <View style={{ justifyContent: 'center', marginLeft: 16 }}><IconoTipo tipo={r.tipo} /></View>} />
           {r.capacidad && <List.Item title={r.capacidad} description="Capacidad o tamaño" left={(p) => <List.Icon {...p} icon="ruler" />} />}
           {r.consumo_kwh_mes_etiqueta && (
             <List.Item

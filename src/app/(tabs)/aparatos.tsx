@@ -3,60 +3,56 @@ import { router, useFocusEffect } from 'expo-router';
 import { FlatList, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { entra } from '@/motion';
-import { Button, List, useTheme } from 'react-native-paper';
-import { EstadoVacio } from '@/components/EstadoVacio';
+import { Button, List, Text } from 'react-native-paper';
+import { AgregarAparatos } from '@/components/AgregarAparatos';
+import { IconoTipo } from '@/components/IconoTipo';
 import { Pantalla } from '@/components/Pantalla';
-import { type Aparato, useColoresTipo } from '@/lib/aparatos';
+import type { Aparato } from '@/lib/aparatos';
 import { formatPower } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 
 export default function Aparatos() {
   const [lista, setLista] = useState<Aparato[]>([]);
-  const theme = useTheme();
-  const colores = useColoresTipo();
 
   // Los archivados no se listan: dejan de aceptar uso, pero siguen en la base de datos.
-  useFocusEffect(
-    useCallback(() => {
-      supabase
-        .from('aparatos')
-        .select('*')
-        .is('archivado_en', null)
-        .order('creado_en', { ascending: false })
-        .then(({ data }) => setLista((data ?? []) as Aparato[]));
-    }, []),
-  );
+  const cargar = useCallback(() => {
+    supabase
+      .from('aparatos')
+      .select('*')
+      .is('archivado_en', null)
+      .order('creado_en', { ascending: false })
+      .then(({ data }) => setLista((data ?? []) as Aparato[]));
+  }, []);
+  useFocusEffect(cargar);
 
   return (
     <Pantalla titulo="Aparatos">
       <FlatList
         data={lista}
         keyExtractor={(a) => String(a.id)}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 16 }}
         ListHeaderComponent={
-          lista.length ? (
-            <View style={{ padding: 16 }}>
-              <Button mode="contained" icon="plus" onPress={() => router.push('/catalogo')}>
-                Agregar aparato
-              </Button>
-            </View>
-          ) : undefined
+          <View style={{ padding: 16, gap: 12 }}>
+            <Text variant="titleLarge">Agregar aparatos</Text>
+            <AgregarAparatos onCambio={cargar} />
+            <Button icon="book-open-variant" contentStyle={{ minHeight: 48 }} onPress={() => router.push('/catalogo')}>
+              Ver el catálogo completo
+            </Button>
+            <Text variant="titleLarge" style={{ marginTop: 8 }}>Tus aparatos</Text>
+          </View>
         }
         ListEmptyComponent={
-          <EstadoVacio
-            icono="power-plug"
-            titulo="Aún no tienes aparatos"
-            texto="Aquí listas lo que usas en casa para calcular cuánto gasta cada cosa. Búscalos en el catálogo o registra uno propio."
-            accion="Agregar de la lista común"
-            onAccion={() => router.push('/catalogo')}
-          />
+          <Text variant="bodyLarge" style={{ paddingHorizontal: 16 }}>
+            Aún no tienes aparatos. Con ellos calculamos cuánto gasta cada cosa en casa.
+          </Text>
         }
         renderItem={({ item: a, index }) => (
           <Animated.View entering={entra(index)}>
           <List.Item
             title={a.cantidad > 1 ? `${a.nombre} ×${a.cantidad}` : a.nombre}
             description={`${a.tipo} · ${formatPower(a.potencia_w)}${a.uso_constante ? ' · uso constante' : ''}`}
-            left={() => <View style={{ width: 6, alignSelf: 'stretch', borderRadius: 3, backgroundColor: colores[a.tipo] ?? theme.colors.outline, marginLeft: 16 }} />}
+            left={() => <View style={{ marginLeft: 16, justifyContent: 'center' }}><IconoTipo tipo={a.tipo} /></View>}
             onPress={() => router.push({ pathname: '/aparato', params: { id: String(a.id) } })}
           />
           </Animated.View>

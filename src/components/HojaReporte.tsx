@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { FlatList, View } from 'react-native';
 import { router } from 'expo-router';
 import { Button, IconButton, List, Modal, Portal, Text, useTheme } from 'react-native-paper';
-import { type Aparato, useColoresTipo } from '@/lib/aparatos';
+import { IconoTipo } from '@/components/IconoTipo';
+import type { Aparato } from '@/lib/aparatos';
 import { aIso } from '@/lib/fechas';
 import { formatDuration } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
@@ -22,7 +23,6 @@ export function HojaReporte({
   onReportar: (a: Aparato, horas: number) => void;
 }) {
   const theme = useTheme();
-  const colores = useColoresTipo();
   const [lista, setLista] = useState<Aparato[]>([]);
   const [elegido, setElegido] = useState<Aparato | null>(null);
   const [horas, setHoras] = useState(1);
@@ -77,9 +77,7 @@ export function HojaReporte({
               <List.Item
                 title={a.cantidad > 1 ? `${a.nombre} ×${a.cantidad}` : a.nombre}
                 description={a.tipo}
-                left={() => (
-                  <View style={{ width: 6, alignSelf: 'stretch', borderRadius: 3, backgroundColor: colores[a.tipo] ?? theme.colors.outline }} />
-                )}
+                left={() => <View style={{ justifyContent: 'center' }}><IconoTipo tipo={a.tipo} /></View>}
                 onPress={() => elegir(a)}
               />
             )}
