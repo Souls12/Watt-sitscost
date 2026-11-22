@@ -9,7 +9,8 @@ import { supabase } from '@/lib/supabase';
 import { urlRetorno } from '@/lib/sesion';
 import { contrasenaValida, correoValido } from '@/lib/validacion';
 
-const completa = (e: Eleccion) => !!e && ('id' in e || e.propuesta.trim().length > 0);
+const YA_REGISTRADO = 'Ese correo ya tiene una cuenta. Toca "Ya tengo cuenta" para entrar con él.';
+const completa =(e: Eleccion) => !!e && ('id' in e || e.propuesta.trim().length > 0);
 
 // El trigger private.crear_perfil lee estos datos y crea el perfil (y la propuesta, si la hay).
 const datosDe = (campo: 'ciudad' | 'empresa', e: Eleccion) =>
@@ -44,11 +45,17 @@ export default function Registro() {
       .then(({ data }) => setEmpresas(data ?? []));
   }, []);
 
-  function seguir() {
+  async function seguir() {
     if (!nombre.trim()) return setError('Escribe tu nombre.');
     if (!correoValido(correo)) return setError('Revisa el formato del correo.');
     if (!contrasenaValida(clave))
       return setError('La contraseña necesita al menos 8 caracteres, con una letra y un número.');
+    // Antes de los pasos 2 y 3: no tiene sentido llenarlos si el correo ya tiene cuenta.
+    setEnviando(true);
+    const { data: registrado, error: e } = await supabase.rpc('correo_registrado', { correo: correo.trim() });
+    setEnviando(false);
+    if (e) return setError('No pudimos revisar el correo. Revisa tu conexión e intenta de nuevo.');
+    if (registrado) return setError(YA_REGISTRADO);
     setError(null);
     setPaso(2);
   }
@@ -77,7 +84,7 @@ export default function Registro() {
       error.code === 'weak_password'
         ? 'La contraseña necesita al menos 8 caracteres, con una letra y un número.'
         : error.code === 'user_already_exists'
-          ? 'Ese correo ya tiene una cuenta. Entra con él o, si olvidaste la contraseña, toca "Olvidé mi contraseña" en Entrar.'
+          ? YA_REGISTRADO
           : 'No pudimos crear la cuenta. Intenta de nuevo.',
     );
   }
@@ -122,7 +129,7 @@ export default function Registro() {
           <HelperText type={error ? 'error' : 'info'} visible>
             {error ?? 'Al menos 8 caracteres, con una letra y un número.'}
           </HelperText>
-          <Button mode="contained" onPress={seguir}>
+          <Button mode="contained" onPress={seguir} loading={enviando} disabled={enviando}>
             Seguir
           </Button>
           <Button icon="help-circle-outline" onPress={() => router.push('/tutorial')}>
