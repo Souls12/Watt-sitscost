@@ -15,9 +15,18 @@ type Propio = { id: number; tipo: string };
 const MAX_RESULTADOS = 6;
 
 // Agregar aparatos: cuadrícula de comunes + búsqueda en el catálogo aprobado + enlace para registrar uno propio.
-// `onCambio` se llama con la cantidad de aparatos activos cada vez que cambia la lista.
+// `onCambio` se llama con la cantidad de aparatos activos cada vez que cambia la lista (también los optimistas).
+// `onGuardado` se llama cuando el servidor ya confirmó un agregado o un retiro: es el momento de recargar listas.
 // En la configuración inicial /aparato aún está bloqueado: allí `permitirPropio` es false.
-export function AgregarAparatos({ onCambio, permitirPropio = true }: { onCambio?: (n: number) => void; permitirPropio?: boolean }) {
+export function AgregarAparatos({
+  onCambio,
+  onGuardado,
+  permitirPropio = true,
+}: {
+  onCambio?: (n: number) => void;
+  onGuardado?: () => void;
+  permitirPropio?: boolean;
+}) {
   const [fichas, setFichas] = useState<Ficha[]>([]);
   const [propios, setPropios] = useState<Propio[]>([]);
   const [ocupado, setOcupado] = useState<string | null>(null);
@@ -81,7 +90,10 @@ export function AgregarAparatos({ onCambio, permitirPropio = true }: { onCambio?
       setPropios((p) => p.filter((a) => a.id !== temporal));
       setAgregado(null);
       setError(`No pudimos agregar ${nombre}. Revisa tu conexión e intenta de nuevo.`);
-    } else setPropios((p) => p.map((a) => (a.id === temporal ? { id: data.id, tipo: f.tipo } : a)));
+    } else {
+      setPropios((p) => p.map((a) => (a.id === temporal ? { id: data.id, tipo: f.tipo } : a)));
+      onGuardado?.();
+    }
     setOcupado(null);
   }
 
@@ -95,7 +107,7 @@ export function AgregarAparatos({ onCambio, permitirPropio = true }: { onCambio?
       if (e) {
         setPropios((p) => [...p, { id, tipo: t.tipo }]);
         setError(`No pudimos quitar ${t.nombre}. Revisa tu conexión e intenta de nuevo.`);
-      }
+      } else onGuardado?.();
       return;
     }
     const ref = referenciaTipica(fichas, t.tipo);

@@ -35,7 +35,8 @@ export default function Aparatos() {
         ListHeaderComponent={
           <View style={{ padding: 16, gap: 12 }}>
             <Text variant="titleLarge">Agregar aparatos</Text>
-            <AgregarAparatos onCambio={cargar} />
+            {/* Recarga cuando el servidor confirma: antes recargaba al desmarcar y traía el aparato aún sin archivar. */}
+            <AgregarAparatos onGuardado={cargar} />
             <Button icon="book-open-variant" contentStyle={{ minHeight: 48 }} onPress={() => router.push('/catalogo')}>
               Ver el catálogo completo
             </Button>
