@@ -76,7 +76,9 @@ export default function Registro() {
     setError(
       error.code === 'weak_password'
         ? 'La contraseña necesita al menos 8 caracteres, con una letra y un número.'
-        : 'No pudimos crear la cuenta. Intenta de nuevo.',
+        : error.code === 'user_already_exists'
+          ? 'Ese correo ya tiene una cuenta. Entra con él o, si olvidaste la contraseña, toca "Olvidé mi contraseña" en Entrar.'
+          : 'No pudimos crear la cuenta. Intenta de nuevo.',
     );
   }
 
