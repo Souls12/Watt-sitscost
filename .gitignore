@@ -9,3 +9,17 @@ ios/
 *.tsbuildinfo
 
 .claude/worktrees/
+
+# Fuera del repo: herramientas de Claude, documentos, demo y pruebas manuales de Supabase
+.claude/
+.impeccable/
+.mcp.json
+CLAUDE.md
+skills-lock.json
+*.md
+*.pdf
+*.docx
+*.pptx
+docs/
+supabase/demo/
+supabase/tests/
