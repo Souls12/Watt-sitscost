@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Watt'sitcost",
+    "slug": "wattitscost",
+    "scheme": "wattsitcost",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "platforms": [
+      "android"
+    ],
+    "android": {
+      "package": "com.souls12.wattsitcost",
+      "adaptiveIcon": {
+        "backgroundColor": "#F6C12E",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "@react-native-vector-icons/material-design-icons",
+      "@react-native-community/datetimepicker"
+    ],
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "dd8dc92c-ce4b-47ce-bad6-cbb7f469175a"
+      }
+    },
+    "owner": "wattitscost"
+  }
+}
