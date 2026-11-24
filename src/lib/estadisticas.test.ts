@@ -1,6 +1,6 @@
-import { cambio, metaRango, porAparato, porDia, rangoMes, semanasDelMes, type Registro } from './estadisticas';
+import { cambio, consejos, proyectar, metaRango, porAparato, porDia, rangoMes, semanasDelMes, type Registro } from './estadisticas';
 
-const r = (fecha: string, aparato_id: number, kwh: number, horas = 1): Registro => ({ fecha, aparato_id, nombre: `A${aparato_id}`, tipo: 'Otro', horas, kwh, costo: kwh * 800 });
+const r = (fecha: string, aparato_id: number, kwh: number, horas = 1, auto = false): Registro => ({ id: 0, fecha, aparato_id, nombre: `A${aparato_id}`, tipo: 'Otro', horas, kwh, costo: kwh * 800, auto });
 
 test('semanas lunes–domingo recortadas al mes', () => {
   // Noviembre 2026 empieza en domingo.
@@ -25,4 +25,16 @@ test('meta repartida por día y cambio', () => {
   expect(metaRango(p, { desde: '2026-12-01', hasta: '2026-12-02' })).toBeNull();
   expect(cambio(85, 100)).toBe(-15);
   expect(cambio(5, 0)).toBeNull();
+});
+
+test('proyección y consejos', () => {
+  expect(proyectar(30, 10, 30)).toBe(90);
+  expect(proyectar(5, 0, 30)).toBe(0);
+  // Aire: 2 kWh en 2 h cada día de los 10 → 1 h menos al día = 1 kWh × 30 días. La nevera (auto) no entra.
+  const rs = Array.from({ length: 10 }, (_, i) => r(`2026-11-${String(i + 1).padStart(2, '0')}`, 1, 2, 2)).concat(r('2026-11-01', 2, 9, 24, true));
+  const c = consejos(rs, rangoMes(2026, 10), '2026-11-10');
+  expect(c).toHaveLength(1);
+  expect(c[0].menosHoras).toBe(1);
+  expect(c[0].kwhMes).toBeCloseTo(30);
+  expect(c[0].pesosMes).toBeCloseTo(24000);
 });

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { Button, List, SegmentedButtons, Text } from 'react-native-paper';
+import { Button, HelperText, List, SegmentedButtons, Switch, Text } from 'react-native-paper';
+import { leerRecordatorio, programarRecordatorio, type Recordatorio } from '@/lib/recordatorio';
 import { Formulario } from '@/components/Formulario';
 import { supabase } from '@/lib/supabase';
 import { useSesion } from '@/lib/sesion';
@@ -22,6 +23,21 @@ export default function Cuenta() {
   const [tema, setTema] = useTema();
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const administrador = useEsAdministrador();
+  const [recordatorio, setRecordatorio] = useState<Recordatorio>({ activo: false, hora: 20 });
+  const [permisoNegado, setPermisoNegado] = useState(false);
+
+  useEffect(() => {
+    leerRecordatorio().then(setRecordatorio);
+  }, []);
+
+  const cambiarRecordatorio = async (r: Recordatorio) => {
+    setPermisoNegado(false);
+    setRecordatorio(r);
+    if (!(await programarRecordatorio(r)) && r.activo) {
+      setRecordatorio({ ...r, activo: false });
+      setPermisoNegado(true);
+    }
+  };
 
   useEffect(() => {
     supabase
@@ -56,6 +72,28 @@ export default function Cuenta() {
         onValueChange={(v) => setTema(v as Tema)}
         buttons={[{ value: 'sistema', label: 'Sistema' }, { value: 'claro', label: 'Claro' }, { value: 'oscuro', label: 'Oscuro' }]}
       />
+      <Text variant="labelLarge">Recordatorio diario</Text>
+      <List.Item
+        title="Recordarme reportar"
+        description={`Todos los días a las ${recordatorio.hora > 12 ? recordatorio.hora - 12 : recordatorio.hora} ${recordatorio.hora >= 12 ? 'pm' : 'am'}`}
+        right={() => (
+          <Switch
+            value={recordatorio.activo}
+            onValueChange={(activo) => cambiarRecordatorio({ ...recordatorio, activo })}
+            accessibilityLabel="Recordarme reportar cada día"
+          />
+        )}
+      />
+      {recordatorio.activo && (
+        <SegmentedButtons
+          value={String(recordatorio.hora)}
+          onValueChange={(v) => cambiarRecordatorio({ ...recordatorio, hora: Number(v) })}
+          buttons={[18, 19, 20, 21, 22].map((h) => ({ value: String(h), label: `${h - 12} pm` }))}
+        />
+      )}
+      <HelperText type="error" visible={permisoNegado}>
+        Activa las notificaciones de la app en los ajustes del teléfono.
+      </HelperText>
       <Button mode="outlined" icon="help-circle-outline" onPress={() => router.push('/tutorial')}>
         Ayuda y tutorial
       </Button>

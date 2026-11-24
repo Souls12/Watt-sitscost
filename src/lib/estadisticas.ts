@@ -1,5 +1,5 @@
 // Estadísticas del mes calendario a partir de los registros de uso (consumo_calculado). Funciones puras.
-export type Registro = { fecha: string; aparato_id: number; nombre: string; tipo: string; horas: number; kwh: number; costo: number };
+export type Registro = { id: number; fecha: string; aparato_id: number; nombre: string; tipo: string; horas: number; kwh: number; costo: number; auto: boolean };
 export type PeriodoMeta = { inicio: string; fin: string; meta_kwh: number };
 export type FilaAparato = { aparato_id: number; nombre: string; tipo: string; horas: number; kwh: number; costo: number };
 export type Rango = { desde: string; hasta: string };
@@ -88,3 +88,29 @@ export function metaRango(periodos: PeriodoMeta[], { desde, hasta }: Rango): num
 
 /** Cambio en % de `antes` a `ahora`; null si antes es 0. */
 export const cambio = (ahora: number, antes: number) => (antes > 0 ? Math.round(((ahora - antes) / antes) * 100) : null);
+
+/** Proyección lineal: si en `transcurridos` días llevas `llevado`, cuánto llevarás en `total` días. */
+export const proyectar = (llevado: number, transcurridos: number, total: number) => (transcurridos > 0 ? (llevado / transcurridos) * total : 0);
+
+export type Consejo = { aparato_id: number; nombre: string; tipo: string; menosHoras: number; kwhMes: number; pesosMes: number };
+
+/**
+ * Hasta 3 consejos para los aparatos manuales que más gastan: usar `menosHoras` menos cada día que se usan
+ * (1 h, o la mitad del uso promedio si es menor) y cuánto se ahorraría en 30 días al ritmo de uso del rango.
+ * Los aparatos con registro automático (la nevera) se omiten: no se pueden "usar menos horas".
+ */
+export function consejos(rs: Registro[], rango: Rango, hoy: string): Consejo[] {
+  const fin = hoy < rango.hasta ? hoy : rango.hasta;
+  const dias = diasEntre(rango.desde, fin) + 1;
+  if (dias <= 0) return [];
+  const autos = new Set(rs.filter((r) => r.auto).map((r) => r.aparato_id));
+  return porAparato(rs.filter((r) => !autos.has(r.aparato_id)), { desde: rango.desde, hasta: fin })
+    .filter((f) => f.horas > 0 && f.kwh > 0)
+    .slice(0, 3)
+    .map((f) => {
+      const usados = new Set(rs.filter((r) => r.aparato_id === f.aparato_id && dentro(r, rango)).map((r) => r.fecha)).size;
+      const menosHoras = Math.min(1, f.horas / usados / 2);
+      const factor = menosHoras * (usados / dias) * 30;
+      return { aparato_id: f.aparato_id, nombre: f.nombre, tipo: f.tipo, menosHoras, kwhMes: (f.kwh / f.horas) * factor, pesosMes: (f.costo / f.horas) * factor };
+    });
+}

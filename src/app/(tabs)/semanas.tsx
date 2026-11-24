@@ -1,6 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState, type ComponentRef } from 'react';
 import { ScrollView, View } from 'react-native';
-import { ActivityIndicator, Card, Chip, Icon, IconButton, Snackbar, Text, useTheme } from 'react-native-paper';
+import { ActivityIndicator, Button, Card, Chip, Icon, IconButton, Snackbar, Text, useTheme } from 'react-native-paper';
+import * as Sharing from 'expo-sharing';
+import { captureRef } from 'react-native-view-shot';
 import { router, useFocusEffect } from 'expo-router';
 import { DetalleDia } from '@/components/DetalleDia';
 import { EstadoVacio } from '@/components/EstadoVacio';
@@ -12,6 +14,8 @@ import { cargarPeriodos, cargarRegistros } from '@/lib/consumo';
 import {
   MESES,
   cambio,
+  consejos,
+  proyectar,
   diaSemana,
   diasEntre,
   metaDia,
@@ -52,16 +56,15 @@ export default function Semanas() {
   const rangoAnt = rangoMes(ant.anio, ant.mes);
   const esActual = hoy <= rango.hasta;
 
-  useFocusEffect(
-    useCallback(() => {
-      Promise.all([cargarRegistros(rangoAnt.desde, rango.hasta), cargarPeriodos()])
-        .then(([r, p]) => {
-          setRs(r);
-          setPeriodos(p);
-        })
-        .catch(() => setError(true));
-    }, [rangoAnt.desde, rango.hasta]),
-  );
+  const cargar = useCallback(() => {
+    Promise.all([cargarRegistros(rangoAnt.desde, rango.hasta), cargarPeriodos()])
+      .then(([r, p]) => {
+        setRs(r);
+        setPeriodos(p);
+      })
+      .catch(() => setError(true));
+  }, [rangoAnt.desde, rango.hasta]);
+  useFocusEffect(cargar);
 
   const irMes = (m: { anio: number; mes: number }) => {
     setMes(m);
@@ -142,7 +145,7 @@ export default function Semanas() {
           </>
         )}
       </ScrollView>
-      <DetalleDia fecha={dia} onCerrar={() => setDia(null)} />
+      <DetalleDia fecha={dia} onCerrar={() => setDia(null)} onCambio={cargar} />
       <Snackbar visible={error} onDismiss={() => setError(false)} duration={5000}>
         No pudimos actualizar tus datos. Revisa tu conexión.
       </Snackbar>
@@ -228,10 +231,30 @@ function VistaMes(p: {
 
   const aparatos = porAparato(rs, rango);
   const tipos = porTipo(rs, rango).map((x) => ({ ...x, color: p.color(x.tipo) }));
+  const tips = consejos(rs, rango, hoy);
+  const diasMes = diasEntre(rango.desde, rango.hasta) + 1;
+  const proy = esActual ? { kwh: proyectar(t.kwh, n + 1, diasMes), costo: proyectar(t.costo, n + 1, diasMes) } : null;
+  const metaMes = metaRango(periodos, rango);
+
+  // Foto de la tarjeta de resumen para compartirla (WhatsApp, etc.).
+  const fondo = useTheme().colors.background;
+  const tarjeta = useRef<ComponentRef<typeof View>>(null);
+  const [compartiendo, setCompartiendo] = useState(false);
+  async function compartir() {
+    setCompartiendo(true);
+    try {
+      const uri = await captureRef(tarjeta, { format: 'png', quality: 1 });
+      await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'Compartir mi resumen' });
+    } catch {
+      // La persona canceló o el teléfono no permite compartir: no hay nada que deshacer.
+    }
+    setCompartiendo(false);
+  }
 
   return (
     <>
-      <Seccion titulo="Resumen del mes">
+      <View ref={tarjeta} collapsable={false} style={{ backgroundColor: fondo }}>
+      <Seccion titulo={`Mi consumo de ${MESES[+rango.desde.slice(5, 7) - 1].toLowerCase()}`}>
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <View style={{ flex: 1 }}>
             <Text variant="labelLarge">{esActual ? 'Este mes' : 'Ese mes'}</Text>
@@ -246,7 +269,22 @@ function VistaMes(p: {
         </View>
         <Cambio ahora={totales(rs, { desde: rango.desde, hasta }).kwh} antes={tAnt.kwh} contra={p.nombreAnt.toLowerCase()} />
         {esActual && <Nota>{`Comparamos del 1 al ${+hoy.slice(8)} de cada mes, para que sea justo.`}</Nota>}
+        {proy && (
+          <Text variant="bodyMedium">
+            {`A este ritmo cerrarás el mes en ${formatEnergy(proy.kwh)}, ${formatMoney(proy.costo)}${
+              metaMes !== null ? (proy.kwh > metaMes ? `: ${formatEnergy(proy.kwh - metaMes)} sobre la meta.` : ': dentro de la meta.') : '.'
+            }`}
+          </Text>
+        )}
+        {aparatos.length > 0 && (
+          <Text variant="bodyMedium">{`Lo que más gastó: ${aparatos.slice(0, 3).map((f) => f.nombre).join(', ')}.`}</Text>
+        )}
+        <Text variant="labelSmall">Watt'sitcost</Text>
       </Seccion>
+      </View>
+      <Button mode="outlined" icon="share-variant" onPress={compartir} loading={compartiendo} disabled={compartiendo} contentStyle={{ minHeight: 48 }}>
+        Compartir mi resumen
+      </Button>
 
       <Seccion titulo="Semana a semana" ayuda="Toca una semana para ver su detalle.">
         <Columnas columnas={columnas} onPress={(c) => p.onSemana(+c)} />
@@ -272,6 +310,20 @@ function VistaMes(p: {
           }))}
         />
       </Seccion>
+
+      {tips.length > 0 && (
+        <Seccion titulo="Cómo ahorrar" ayuda="Pequeños cambios en los aparatos que más gastan:">
+          {tips.map((c) => (
+            <View key={c.aparato_id} style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }} accessible>
+              <Icon source="lightbulb-on-outline" size={24} color={p.color(c.tipo)} />
+              <Text variant="bodyMedium" style={{ flex: 1 }}>
+                {`Usar ${c.nombre} ${formatDuration(c.menosHoras * 60)} menos cada día que lo usas te ahorraría unos ${formatEnergy(c.kwhMes)}, ${formatMoney(c.pesosMes)} al mes.`}
+              </Text>
+            </View>
+          ))}
+          <Nota>Estimado con lo que lo has usado este mes; la nevera no aparece porque se registra sola.</Nota>
+        </Seccion>
+      )}
 
       <Seccion titulo="Por tipo de aparato">
         <Dona datos={tipos} costo={t.costo} />

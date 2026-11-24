@@ -167,11 +167,11 @@ export function Dona({ datos, costo }: { datos: { tipo: string; kwh: number; col
       accessibilityLabel={`Reparto por tipo: ${datos.map((d) => `${d.tipo} ${pct(d.kwh)} por ciento`).join(', ')}`}
     >
       <View style={{ width: 130, height: 130, alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ position: 'absolute', inset: 0 }}>
+        {total > 0 && <View style={{ position: 'absolute', inset: 0 }}>
           <PolarChart data={datos} labelKey="tipo" valueKey="kwh" colorKey="color">
             <Pie.Chart innerRadius="62%" />
           </PolarChart>
-        </View>
+        </View>}
         <Text variant="titleSmall">{formatEnergy(total)}</Text>
         <Text variant="labelSmall">{formatMoney(costo)}</Text>
       </View>

@@ -2,13 +2,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Almanaque } from '@/components/Almanaque';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { Badge, FAB, IconButton, Snackbar, Text } from 'react-native-paper';
+import { Badge, FAB, IconButton, Snackbar, Text, useTheme } from 'react-native-paper';
 import { EstadoVacio } from '@/components/EstadoVacio';
 import { CierrePeriodo } from '@/components/CierrePeriodo';
 import { DetalleDia } from '@/components/DetalleDia';
 import { HojaReporte } from '@/components/HojaReporte';
+import { HojaRutina } from '@/components/HojaRutina';
 import { Pantalla } from '@/components/Pantalla';
 import { Nota } from '@/components/Nota';
+import { proyectar } from '@/lib/estadisticas';
+import { hoyIso } from '@/lib/fechas';
 import { formatEnergy, formatMoney } from '@/lib/format';
 import { usePanelUso } from '@/lib/usePanelUso';
 import { useNoLeidos } from '@/lib/avisos';
@@ -17,10 +20,12 @@ import { encabezado } from '@/theme';
 
 // Mes: consumo calculado del mes y racha, con el reporte de uso en 3 toques. El ticket del periodo lo completa.
 export default function Mes() {
+  const theme = useTheme();
   const { panel, hoy, dias, cifra, cargar, reportar } = usePanelUso();
   const noLeidos = useNoLeidos();
   const [abierta, setAbierta] = useState(false);
   const [dia, setDia] = useState<string | null>(null);
+  const [rutina, setRutina] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Otras pantallas (Semanas vacía) mandan aquí con ?reportar=1 para abrir la hoja de reporte.
   const { reportar: pedirReporte } = useLocalSearchParams<{ reportar?: string }>();
@@ -35,6 +40,10 @@ export default function Mes() {
       cargar().then(setError);
     }, [cargar]),
   );
+
+  // A este ritmo: lo gastado por día hasta hoy, extendido a todo el periodo.
+  const transcurridos = dias.filter((d) => d.fecha <= hoyIso()).length;
+  const proyeccion = hoy && transcurridos > 0 ? proyectar(hoy.consumido_periodo, transcurridos, transcurridos + hoy.dias_restantes - 1) : null;
 
   return (
     <View style={{ flex: 1 }}>
@@ -94,6 +103,22 @@ export default function Mes() {
                   : `Faltan ${hoy.dias_restantes} días del periodo.`}
               </Text>
               <Nota>≈ calculado con tu tarifa; no es el total de tu factura.</Nota>
+              {proyeccion !== null && hoy.estado !== 'extendido' && (
+                <View
+                  accessible
+                  style={{ borderRadius: 12, padding: 12, gap: 4, backgroundColor: proyeccion > hoy.meta_kwh ? theme.colors.tertiaryContainer : theme.colors.secondaryContainer }}
+                >
+                  <Text variant="titleSmall">
+                    {`A este ritmo terminarás el periodo en ${formatEnergy(proyeccion)}, ${formatMoney(proyeccion * hoy.tarifa_kwh)}.`}
+                  </Text>
+                  <Text variant="bodyMedium">
+                    {proyeccion > hoy.meta_kwh
+                      ? `Eso es ${formatEnergy(proyeccion - hoy.meta_kwh)} por encima de tu meta. Revisa los consejos en Semanas.`
+                      : `Vas ${formatEnergy(hoy.meta_kwh - proyeccion)} por debajo de tu meta. ¡Sigue así!`}
+                  </Text>
+                  <Nota>Estimado si sigues gastando como hasta hoy.</Nota>
+                </View>
+              )}
               <Racha dias={hoy.racha} />
             </>
           ) : (
@@ -127,8 +152,10 @@ export default function Mes() {
         visible={abierta}
         onCerrar={() => setAbierta(false)}
         onReportar={async (a, h) => setError(await reportar(a, h))}
+        onRutina={() => setRutina(true)}
       />
-      <DetalleDia fecha={dia} onCerrar={() => setDia(null)} />
+      <HojaRutina visible={rutina} onCerrar={() => setRutina(false)} onListo={() => cargar().then(setError)} />
+      <DetalleDia fecha={dia} onCerrar={() => setDia(null)} onCambio={() => cargar().then(setError)} />
       <Snackbar visible={!!error} onDismiss={() => setError(null)} duration={5000}>
         {error}
       </Snackbar>

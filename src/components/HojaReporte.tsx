@@ -17,10 +17,12 @@ export function HojaReporte({
   visible,
   onCerrar,
   onReportar,
+  onRutina,
 }: {
   visible: boolean;
   onCerrar: () => void;
   onReportar: (a: Aparato, horas: number) => void;
+  onRutina?: () => void; // si se pasa, ofrece repetir un día anterior de un toque
 }) {
   const theme = useTheme();
   const [lista, setLista] = useState<Aparato[]>([]);
@@ -64,7 +66,16 @@ export function HojaReporte({
             data={lista}
             keyExtractor={(a) => String(a.id)}
             style={{ flexGrow: 0 }}
-            ListHeaderComponent={<Text variant="titleLarge">¿Qué usaste?</Text>}
+            ListHeaderComponent={
+              <View style={{ gap: 8 }}>
+                <Text variant="titleLarge">¿Qué usaste?</Text>
+                {onRutina && lista.length > 0 && (
+                  <Button mode="outlined" icon="repeat" contentStyle={{ minHeight: 48 }} onPress={() => { onCerrar(); onRutina(); }}>
+                    Repetir mi día de un toque
+                  </Button>
+                )}
+              </View>
+            }
             ListEmptyComponent={
               <View style={{ paddingVertical: 16, gap: 12 }}>
                 <Text variant="bodyLarge">Para reportar uso primero agrega un aparato.</Text>

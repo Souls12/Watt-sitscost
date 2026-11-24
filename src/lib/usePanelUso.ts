@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { useCallback, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useCifraPrincipal } from '@/lib/ajustes';
@@ -61,6 +62,14 @@ export function usePanelUso() {
         es_hoy: !!x.es_hoy,
       })),
     );
+    if (Platform.OS === 'android') {
+      // require perezoso: el módulo nativo no existe en jest ni en web.
+      try {
+        const { requestWidgetUpdate } = require('react-native-android-widget');
+        const { datosWidget, renderResumen } = require('@/widget/datos');
+        requestWidgetUpdate({ widgetName: 'Resumen', renderWidget: async () => renderResumen(await datosWidget()) }).catch(() => {});
+      } catch {}
+    }
     return null;
   }, []);
 
