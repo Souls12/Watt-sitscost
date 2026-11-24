@@ -35,7 +35,7 @@ export function useTarifa(conGuia = true) {
       {conGuia && <Button icon="help-circle-outline" onPress={() => setVerGuia((v) => !v)} contentStyle={{ minHeight: 48 }}>
         ¿Dónde la encuentro?
       </Button>}
-      {conGuia && verGuia && <GuiaFactura foco="tarifa" onTarifa={setTexto} />}
+      {conGuia && verGuia && <GuiaFactura foco="tarifa" />}
       <Portal>
         <Dialog visible={!!pendiente} onDismiss={() => setPendiente(null)}>
           <Dialog.Title>¿Es correcto?</Dialog.Title>

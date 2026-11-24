@@ -13,7 +13,7 @@ import { hoyIso } from '@/lib/fechas';
 import { formatEnergy, formatMoney, formatTarifa } from '@/lib/format';
 import { useSesion } from '@/lib/sesion';
 import { supabase } from '@/lib/supabase';
-import { leerTarifa } from '@/lib/tarifa';
+import { leerTarifa, tarifaNeta } from '@/lib/tarifa';
 import { Luna, entra, paginaEntra, paginaSale } from '@/motion';
 
 type Paso = 'tarifa' | 'aparatos' | 'factura' | 'meta' | 'listo';
@@ -40,6 +40,7 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
   // Tarifa
   const { texto, setTexto, campo, validar } = useTarifa(false);
   const [tarifaActual, setTarifaActual] = useState<number | null>(null);
+  const [subsidio, setSubsidio] = useState('');
   const [explicar, setExplicar] = useState(false);
   const [n, setN] = useState(0);
   // Factura y meta
@@ -63,8 +64,10 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
     });
   }, [session, setTexto]);
 
-  const tarifaNueva = leerTarifa(texto);
+  // Se guarda la tarifa menos el subsidio (opcional).
+  const tarifaNueva = leerTarifa(tarifaNeta(texto, subsidio) ?? '');
   async function guardarTarifa() {
+    if (tarifaNueva === null) return setError('El subsidio no puede ser igual o mayor que la tarifa.');
     if (tarifaNueva !== null && tarifaNueva !== tarifaActual) {
       const { error: e } = await supabase.from('tarifas_usuario').insert({ valor_kwh: tarifaNueva });
       if (e) return setError('No pudimos guardar la tarifa. Intenta de nuevo.');
@@ -115,9 +118,18 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
           <>
             <Text variant="titleLarge">¿Cuánto pagas por cada kWh?</Text>
             <Text variant="bodyLarge">
-              {`Con este valor calculamos cuánto cuesta lo que gastas.${tarifaActual ? ' Ya pusimos el que nos diste al registrarte.' : ''}`}
+              Con este valor calculamos cuánto cuesta lo que gastas.
             </Text>
             {campo}
+            <TextInput
+              label="Subsidio por kWh (opcional)"
+              mode="outlined"
+              value={subsidio}
+              onChangeText={setSubsidio}
+              keyboardType="decimal-pad"
+              left={<TextInput.Affix text="$" />}
+            />
+            <Nota>Si tu factura muestra una fila “Subsidio” (estratos 1, 2 y 3), escríbelo y lo restamos de la tarifa. Si no, déjalo vacío.</Nota>
             <Button icon="help-circle-outline" onPress={() => setExplicar((v) => !v)} contentStyle={{ minHeight: 48 }}>
               No sé mi tarifa
             </Button>
@@ -127,13 +139,7 @@ export function Configuracion({ onTerminar }: { onTerminar: () => void }) {
                 style={{ borderRadius: 12, padding: 16, gap: 8, backgroundColor: theme.colors.surfaceVariant }}
               >
                 <Text variant="titleSmall">¿Dónde la encuentro?</Text>
-                <Text variant="bodyMedium">
-                  En tu factura de energía busca “Valor kWh”, “Costo unitario” o “Tarifa”. Es lo que pagas por cada kWh y suele estar entre 500 y 1.200 pesos. No es el total a pagar.
-                </Text>
-                <Text variant="bodyMedium">
-                  Si no la encuentras, deja el valor que ves: es aproximado y lo puedes cambiar después en Mi cuenta, en Mi tarifa.
-                </Text>
-                <GuiaFactura foco="tarifa" onTarifa={setTexto} />
+                <GuiaFactura foco="tarifa" />
               </Animated.View>
             )}
             {err}

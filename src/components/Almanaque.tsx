@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { Luna } from '@/motion';
 import { fechaLarga } from '@/lib/fechas';
@@ -18,7 +18,8 @@ const hablado = (d: DiaAlmanaque) =>
     .join(', ');
 
 // Cuadrícula L–D del periodo: cada día es una luna que se llena con lo gastado; hoy en rojo; punto = día reportado.
-export function Almanaque({ dias }: { dias: DiaAlmanaque[] }) {
+// Tocar un día abre sus aparatos (onDia).
+export function Almanaque({ dias, onDia }: { dias: DiaAlmanaque[]; onDia?: (fecha: string) => void }) {
   const { colors } = useTheme();
   if (!dias.length) return null;
   const celdas: (DiaAlmanaque | null)[] = [...Array(lunes(dias[0].fecha)).fill(null), ...dias];
@@ -36,9 +37,14 @@ export function Almanaque({ dias }: { dias: DiaAlmanaque[] }) {
       {filas.map((f, i) => (
         <View key={i} style={{ flexDirection: 'row' }}>
           {f.map((d, j) => (
-            <View
+            <Pressable
               key={j}
-              style={{
+              disabled={!d || !onDia}
+              onPress={() => d && onDia?.(d.fecha)}
+              accessibilityRole={d && onDia ? 'button' : undefined}
+              accessibilityHint={d && onDia ? 'Muestra los aparatos usados ese día' : undefined}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.6 : 1,
                 flex: 1,
                 aspectRatio: 1,
                 margin: 2,
@@ -47,7 +53,7 @@ export function Almanaque({ dias }: { dias: DiaAlmanaque[] }) {
                 borderWidth: d?.es_hoy ? 2 : d ? 1 : 0,
                 borderColor: d?.es_hoy ? colors.primary : colors.outline,
                 borderRadius: 6,
-              }}
+              })}
               accessible={!!d}
               importantForAccessibility={d ? 'yes' : 'no-hide-descendants'}
               accessibilityLabel={d ? hablado(d) : undefined}
@@ -72,7 +78,7 @@ export function Almanaque({ dias }: { dias: DiaAlmanaque[] }) {
                   )}
                 </>
               )}
-            </View>
+            </Pressable>
           ))}
         </View>
       ))}

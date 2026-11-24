@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { Button, HelperText, SegmentedButtons, Text, TextInput } from 'react-native-paper';
 import { Formulario } from '@/components/Formulario';
-import { useTarifa } from '@/components/CampoTarifa';
-import { leerTarifa } from '@/lib/tarifa';
 import { Selector, type Eleccion, type Opcion } from '@/components/Selector';
 import { supabase } from '@/lib/supabase';
 import { urlRetorno } from '@/lib/sesion';
@@ -17,7 +15,7 @@ const datosDe = (campo: 'ciudad' | 'empresa', e: Eleccion) =>
   e && 'id' in e ? { [`${campo}_id`]: e.id } : { [`${campo}_propuesta`]: e?.propuesta.trim() };
 
 export default function Registro() {
-  const [paso, setPaso] = useState<1 | 2 | 3 | 'listo'>(1);
+  const [paso, setPaso] = useState<1 | 2 | 'listo'>(1);
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [clave, setClave] = useState('');
@@ -26,7 +24,6 @@ export default function Registro() {
   const [estrato, setEstrato] = useState('');
   const [ciudades, setCiudades] = useState<Opcion[]>([]);
   const [empresas, setEmpresas] = useState<Opcion[]>([]);
-  const { texto: tarifa, campo: campoTarifa, validar: validarTarifa } = useTarifa();
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -50,7 +47,7 @@ export default function Registro() {
     if (!correoValido(correo)) return setError('Revisa el formato del correo.');
     if (!contrasenaValida(clave))
       return setError('La contraseña necesita al menos 8 caracteres, con una letra y un número.');
-    // Antes de los pasos 2 y 3: no tiene sentido llenarlos si el correo ya tiene cuenta.
+    // Antes del paso 2: no tiene sentido llenarlos si el correo ya tiene cuenta.
     setEnviando(true);
     const { data: registrado, error: e } = await supabase.rpc('correo_registrado', { correo: correo.trim() });
     setEnviando(false);
@@ -64,7 +61,7 @@ export default function Registro() {
     if (!completa(ciudad) || !estrato || !completa(empresa))
       return setError('Elige tu ciudad, tu estrato y tu empresa proveedora.');
     setError(null);
-    setPaso(3);
+    crear();
   }
 
   async function crear() {
@@ -74,7 +71,7 @@ export default function Registro() {
       password: clave,
       options: {
         emailRedirectTo: urlRetorno,
-        data: { nombre: nombre.trim(), estrato: Number(estrato), tarifa_kwh: leerTarifa(tarifa), ...datosDe('ciudad', ciudad), ...datosDe('empresa', empresa) },
+        data: { nombre: nombre.trim(), estrato: Number(estrato), ...datosDe('ciudad', ciudad), ...datosDe('empresa', empresa) },
       },
     });
     setEnviando(false);
@@ -103,9 +100,9 @@ export default function Registro() {
     );
 
   return (
-    // En los pasos 2 y 3 se vuelve con su botón "Atrás", sin salir del registro ni perder lo escrito.
-    <Formulario atras={paso === 1 ? '/entrar' : undefined} titulo={paso === 1 ? 'Tu cuenta' : paso === 2 ? 'Dónde vives' : 'Tu tarifa'}>
-      <Text variant="labelLarge">Paso {paso} de 3</Text>
+    // En el paso 2 se vuelve con su botón "Atrás", sin salir del registro ni perder lo escrito.
+    <Formulario atras={paso === 1 ? '/entrar' : undefined} titulo={paso === 1 ? 'Tu cuenta' : 'Dónde vives'}>
+      <Text variant="labelLarge">Paso {paso} de 2</Text>
       {paso === 1 ? (
         <>
           <TextInput label="Nombre" mode="outlined" value={nombre} onChangeText={setNombre} autoComplete="name" />
@@ -137,7 +134,7 @@ export default function Registro() {
           </Button>
           <Button onPress={() => router.replace('/entrar')}>Ya tengo cuenta</Button>
         </>
-      ) : paso === 2 ? (
+      ) : (
         <>
           <Selector
             etiqueta="Ciudad"
@@ -162,21 +159,10 @@ export default function Registro() {
           <HelperText type="error" visible={!!error}>
             {error}
           </HelperText>
-          <Button mode="contained" onPress={seguir2}>
-            Seguir
-          </Button>
-          <Button onPress={() => setPaso(1)}>Atrás</Button>
-        </>
-      ) : (
-        <>
-          {campoTarifa}
-          <HelperText type="error" visible={!!error}>
-            {error}
-          </HelperText>
-          <Button mode="contained" onPress={() => validarTarifa(crear)} loading={enviando} disabled={enviando}>
+          <Button mode="contained" onPress={seguir2} loading={enviando} disabled={enviando}>
             Crear cuenta
           </Button>
-          <Button onPress={() => setPaso(2)}>Atrás</Button>
+          <Button onPress={() => setPaso(1)}>Atrás</Button>
         </>
       )}
     </Formulario>

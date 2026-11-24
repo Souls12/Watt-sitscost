@@ -1,16 +1,14 @@
 import { type ReactNode, useState } from 'react';
 import { View } from 'react-native';
-import { Icon, SegmentedButtons, Text, TextInput, useTheme } from 'react-native-paper';
-import { Nota } from '@/components/Nota';
-import { tarifaNeta } from '@/lib/tarifa';
+import { Icon, SegmentedButtons, Text, useTheme } from 'react-native-paper';
 
 type Variante = 'afinia' | 'generica';
 type Foco = 'consumo' | 'tarifa';
 
 // Factura ilustrada: marca dónde están el consumo facturado (kWh) y las fechas del periodo (foco 'consumo'),
-// o la tarifa en $/kWh (foco 'tarifa'). Con `onTarifa` y foco 'tarifa' suma una calculadora que llena el campo de tarifa.
+// o la tarifa en $/kWh (foco 'tarifa').
 // Los números del dibujo son inventados.
-export function GuiaFactura({ foco = 'consumo', onTarifa }: { foco?: Foco; onTarifa?: (texto: string) => void }) {
+export function GuiaFactura({ foco = 'consumo' }: { foco?: Foco }) {
   const [v, setV] = useState<Variante>('afinia');
   return (
     <View style={{ gap: 8 }}>
@@ -23,7 +21,6 @@ export function GuiaFactura({ foco = 'consumo', onTarifa }: { foco?: Foco; onTar
         ]}
       />
       {v === 'afinia' ? <GuiaAfinia foco={foco} /> : <GuiaGenerica foco={foco} />}
-      {foco === 'tarifa' && onTarifa && <CalculadoraTarifa onTarifa={onTarifa} />}
     </View>
   );
 }
@@ -254,28 +251,6 @@ function GuiaGenerica({ foco }: { foco: Foco }) {
           ? 'Busca “Valor kWh” o “Costo unitario”, en $/kWh: suele estar entre 500 y 1.200 pesos. Si aparece un subsidio por kWh, réstalo. No uses el total a pagar.'
           : 'Busca los kWh del mes y las fechas “desde” y “hasta” del consumo. No uses la fecha de pago ni el total en pesos.'}
       </Text>
-    </View>
-  );
-}
-
-// Calcula tarifa − subsidio y llena el campo de tarifa mientras se escribe.
-function CalculadoraTarifa({ onTarifa }: { onTarifa: (texto: string) => void }) {
-  const [tarifa, setTarifa] = useState('');
-  const [subsidio, setSubsidio] = useState('');
-  const cambiar = (t: string, s: string) => {
-    setTarifa(t);
-    setSubsidio(s);
-    const neta = tarifaNeta(t, s);
-    if (neta) onTarifa(neta);
-  };
-  const neta = tarifaNeta(tarifa, subsidio);
-  return (
-    <View style={{ gap: 8, paddingTop: 4 }}>
-      <Text variant="titleSmall">Calcúlala aquí</Text>
-      <TextInput label="Tarifa en $/kWh" mode="outlined" value={tarifa} onChangeText={(t) => cambiar(t, subsidio)} keyboardType="decimal-pad" left={<TextInput.Affix text="$" />} />
-      <TextInput label="Subsidio en $/kWh (si aparece)" mode="outlined" value={subsidio} onChangeText={(s) => cambiar(tarifa, s)} keyboardType="decimal-pad" left={<TextInput.Affix text="$" />} />
-      <Text variant="titleMedium">{neta ? `Tu tarifa: $${neta} por kWh (ya está en el campo)` : 'Escribe la tarifa para calcularla.'}</Text>
-      <Nota>El subsidio solo cubre el consumo básico (de subsistencia). Si gastas bastante más que eso, tu tarifa real es un poco mayor: este valor es aproximado.</Nota>
     </View>
   );
 }

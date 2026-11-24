@@ -5,6 +5,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Badge, FAB, IconButton, Snackbar, Text } from 'react-native-paper';
 import { EstadoVacio } from '@/components/EstadoVacio';
 import { CierrePeriodo } from '@/components/CierrePeriodo';
+import { DetalleDia } from '@/components/DetalleDia';
 import { HojaReporte } from '@/components/HojaReporte';
 import { Pantalla } from '@/components/Pantalla';
 import { Nota } from '@/components/Nota';
@@ -19,6 +20,7 @@ export default function Mes() {
   const { panel, hoy, dias, cifra, cargar, reportar } = usePanelUso();
   const noLeidos = useNoLeidos();
   const [abierta, setAbierta] = useState(false);
+  const [dia, setDia] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Otras pantallas (Semanas vacía) mandan aquí con ?reportar=1 para abrir la hoja de reporte.
   const { reportar: pedirReporte } = useLocalSearchParams<{ reportar?: string }>();
@@ -110,7 +112,8 @@ export default function Mes() {
               />
             </>
           )}
-          <Almanaque dias={dias} />
+          <Almanaque dias={dias} onDia={setDia} />
+          {dias.length > 0 && <Nota>Toca un día para ver qué aparatos usaste y cuánto tiempo.</Nota>}
         </ScrollView>
       </Pantalla>
       <FAB
@@ -125,6 +128,7 @@ export default function Mes() {
         onCerrar={() => setAbierta(false)}
         onReportar={async (a, h) => setError(await reportar(a, h))}
       />
+      <DetalleDia fecha={dia} onCerrar={() => setDia(null)} />
       <Snackbar visible={!!error} onDismiss={() => setError(null)} duration={5000}>
         {error}
       </Snackbar>
